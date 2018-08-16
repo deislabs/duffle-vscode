@@ -24,31 +24,38 @@
         "commands": [
             {
                 "command": "extension.duffleInit",
-                "title": "Duffle Init"
+                "title": "Init",
+                "category": "Duffle"
             },
             {
                 "command": "extension.duffleBuild",
-                "title": "Duffle Build"
+                "title": "Build",
+                "category": "Duffle"
             },
             {
                 "command": "extension.dufflePush",
-                "title": "Duffle Push"
+                "title": "Push",
+                "category": "Duffle"
             },
             {
                 "command": "extension.dufflePull",
-                "title": "Duffle Pull"
+                "title": "Pull",
+                "category": "Duffle"
             },
             {
                 "command": "extension.duffleImport",
-                "title": "Duffle Import"
+                "title": "Import",
+                "category": "Duffle"
             },
             {
                 "command": "extension.duffleExport",
-                "title": "Duffle Export"
+                "title": "Export",
+                "category": "Duffle"
             },
             {
                 "command": "extension.duffleRun",
-                "title": "Duffle Run"
+                "title": "Run",
+                "category": "Duffle"
             }
         ]
     },
