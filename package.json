@@ -11,14 +11,44 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:extension.duffleInit",
+        "onCommand:extension.duffleBuild",
+        "onCommand:extension.dufflePush",
+        "onCommand:extension.dufflePull",
+        "onCommand:extension.duffleImport",
+        "onCommand:extension.duffleExport",
+        "onCommand:extension.duffleRun"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
+                "command": "extension.duffleInit",
+                "title": "Duffle Init"
+            },
+            {
+                "command": "extension.duffleBuild",
+                "title": "Duffle Build"
+            },
+            {
+                "command": "extension.dufflePush",
+                "title": "Duffle Push"
+            },
+            {
+                "command": "extension.dufflePull",
+                "title": "Duffle Pull"
+            },
+            {
+                "command": "extension.duffleImport",
+                "title": "Duffle Import"
+            },
+            {
+                "command": "extension.duffleExport",
+                "title": "Duffle Export"
+            },
+            {
+                "command": "extension.duffleRun",
+                "title": "Duffle Run"
             }
         ]
     },
