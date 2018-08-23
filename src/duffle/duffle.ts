@@ -1,0 +1,19 @@
+import { Errorable } from '../utils/errorable';
+import * as shell from '../utils/shell';
+
+async function invokeObj<T>(sh: shell.Shell, command: string, args: string, fn: (stdout: string) => T): Promise<Errorable<T>> {
+    return await sh.execObj<T>(
+        `duffle ${command} ${args}`,
+        `duffle ${command}`,
+        fn
+    );
+}
+
+export async function list(sh: shell.Shell): Promise<Errorable<string[]>> {
+    function listCore(stdout: string): string[] {
+        return stdout.split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0);
+    }
+    return invokeObj(sh, 'list', '', listCore);
+}

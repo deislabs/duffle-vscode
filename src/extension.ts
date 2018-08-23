@@ -2,9 +2,10 @@
 
 import * as vscode from 'vscode';
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
+import * as shell from './utils/shell';
 
 export function activate(context: vscode.ExtensionContext) {
-    const bundleExplorer = new BundleExplorer();
+    const bundleExplorer = new BundleExplorer(shell.shell);
 
     const subscriptions = [
         vscode.commands.registerCommand('extension.sayHello', () => { }),
