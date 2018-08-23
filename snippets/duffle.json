@@ -1,0 +1,11 @@
+{
+    "duffle.toml": {
+        "prefix": "duffle.toml",
+        "body": [
+            "name = \"$1\"",
+            "registry = \"$2\"",
+            "components = [\"$3\"]"
+        ],
+        "description": "Create a duffle.toml file"
+    }
+}
