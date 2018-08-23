@@ -13,6 +13,7 @@
         "Other"
     ],
     "activationEvents": [
+        "onLanguage:toml",
         "onCommand:extension.sayHello"
     ],
     "main": "./out/extension",
@@ -21,6 +22,12 @@
             {
                 "command": "extension.sayHello",
                 "title": "Hello World"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "toml",
+                "path": "./snippets/duffle.json"
             }
         ]
     },
