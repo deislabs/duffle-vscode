@@ -14,7 +14,8 @@
     ],
     "activationEvents": [
         "onLanguage:toml",
-        "onCommand:extension.sayHello"
+        "onCommand:extension.sayHello",
+        "onView:duffle.bundleExplorer"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -29,7 +30,24 @@
                 "language": "toml",
                 "path": "./snippets/duffle.json"
             }
-        ]
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "duffle",
+                    "icon": "./images/duffle.svg",
+                    "title": "Duffle"
+                }
+            ]
+        },
+        "views": {
+            "duffle": [
+                {
+                    "id": "duffle.bundleExplorer",
+                    "name": "Bundles"
+                }
+            ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
