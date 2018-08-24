@@ -8,7 +8,7 @@ export function activate(context: vscode.ExtensionContext) {
     const bundleExplorer = new BundleExplorer(shell.shell);
 
     const subscriptions = [
-        vscode.commands.registerCommand('extension.sayHello', () => { }),
+        vscode.commands.registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer)
     ];
 

@@ -6,7 +6,8 @@ import { Shell } from '../../utils/shell';
 export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNode> {
     constructor(private readonly shell: Shell) { }
 
-    // onDidChangeTreeData?: vscode.Event<any> | undefined;
+    private onDidChangeTreeDataEmitter: vscode.EventEmitter<BundleExplorerNode | undefined> = new vscode.EventEmitter<BundleExplorerNode | undefined>();
+    readonly onDidChangeTreeData: vscode.Event<BundleExplorerNode | undefined> = this.onDidChangeTreeDataEmitter.event;
 
     getTreeItem(element: BundleExplorerNode): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element.getTreeItem();
@@ -17,6 +18,10 @@ export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNod
             return getBundleNodes(this.shell);
         }
         return [];
+    }
+
+    refresh(): void {
+        this.onDidChangeTreeDataEmitter.fire();
     }
 }
 

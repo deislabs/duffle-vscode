@@ -14,15 +14,20 @@
     ],
     "activationEvents": [
         "onLanguage:toml",
-        "onCommand:extension.sayHello",
+        "onCommand:duffle.refreshBundleExplorer",
         "onView:duffle.bundleExplorer"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
+                "command": "duffle.refreshBundleExplorer",
+                "title": "Refresh Bundle Explorer",
+                "category": "Duffle",
+                "icon": {
+                    "light": "images/light/refresh.svg",
+                    "dark": "images/dark/refresh.svg"
+                }
             }
         ],
         "configuration": {
@@ -39,6 +44,21 @@
                     }
                 }
             }
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "duffle.refreshBundleExplorer",
+                    "when": "view == duffle.bundleExplorer",
+                    "group": "navigation"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "duffle.refreshBundleExplorer",
+                    "when": "view == duffle.bundleExplorer"
+                }
+            ]
         },
         "snippets": [
             {
