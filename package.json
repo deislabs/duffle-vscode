@@ -25,6 +25,21 @@
                 "title": "Hello World"
             }
         ],
+        "configuration": {
+            "title": "Duffle configuration",
+            "properties": {
+                "vscode-duffle": {
+                    "type": "object",
+                    "description": "Duffle configuration",
+                    "properties": {
+                        "duffle-path": {
+                            "type": "string",
+                            "description": "File path to a duffle binary"
+                        }
+                    }
+                }
+            }
+        },
         "snippets": [
             {
                 "language": "toml",

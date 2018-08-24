@@ -1,9 +1,11 @@
+import * as config from '../config/config';
 import { Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
 
 async function invokeObj<T>(sh: shell.Shell, command: string, args: string, fn: (stdout: string) => T): Promise<Errorable<T>> {
+    const bin = config.dufflePath() || 'duffle';
     return await sh.execObj<T>(
-        `duffle ${command} ${args}`,
+        `${bin} ${command} ${args}`,
         `duffle ${command}`,
         fn
     );
