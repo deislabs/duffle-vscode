@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+
 import * as duffle from '../../duffle/duffle';
 import { succeeded } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';

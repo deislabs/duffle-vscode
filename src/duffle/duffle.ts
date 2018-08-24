@@ -12,10 +12,19 @@ async function invokeObj<T>(sh: shell.Shell, command: string, args: string, fn: 
 }
 
 export async function list(sh: shell.Shell): Promise<Errorable<string[]>> {
-    function listCore(stdout: string): string[] {
+    function parse(stdout: string): string[] {
         return stdout.split('\n')
             .map((l) => l.trim())
             .filter((l) => l.length > 0);
     }
-    return invokeObj(sh, 'list', '', listCore);
+    return invokeObj(sh, 'list', '', parse);
+}
+
+export async function listRepos(sh: shell.Shell): Promise<Errorable<string[]>> {
+    function parse(stdout: string): string[] {
+        return stdout.split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0);
+    }
+    return invokeObj(sh, 'repo list', '', parse);
 }
