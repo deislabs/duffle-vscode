@@ -14,22 +14,117 @@
     ],
     "activationEvents": [
         "onLanguage:toml",
-        "onCommand:extension.sayHello"
+        "onCommand:duffle.refreshBundleExplorer",
+        "onCommand:duffle.bundleStatus",
+        "onCommand:duffle.refreshRepoExplorer",
+        "onView:duffle.bundleExplorer",
+        "onView:duffle.repoExplorer"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
+                "command": "duffle.refreshBundleExplorer",
+                "title": "Refresh Bundle Explorer",
+                "category": "Duffle",
+                "icon": {
+                    "light": "images/light/refresh.svg",
+                    "dark": "images/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "duffle.bundleStatus",
+                "title": "Status",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.refreshRepoExplorer",
+                "title": "Refresh Repo Explorer",
+                "category": "Duffle",
+                "icon": {
+                    "light": "images/light/refresh.svg",
+                    "dark": "images/dark/refresh.svg"
+                }
             }
         ],
+        "configuration": {
+            "title": "Duffle configuration",
+            "properties": {
+                "vscode-duffle": {
+                    "type": "object",
+                    "description": "Duffle configuration",
+                    "properties": {
+                        "duffle-path": {
+                            "type": "string",
+                            "description": "File path to a duffle binary"
+                        }
+                    }
+                }
+            }
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "duffle.refreshBundleExplorer",
+                    "when": "view == duffle.bundleExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "duffle.refreshRepoExplorer",
+                    "when": "view == duffle.repoExplorer",
+                    "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "duffle.bundleStatus",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
+                    "group": "0"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "duffle.refreshBundleExplorer",
+                    "when": "view == duffle.bundleExplorer"
+                },
+                {
+                    "command": "duffle.bundleStatus",
+                    "when": "view == duffle.bundleExplorer && viewItem = duffle.bundle",
+                    "group": "navigation"
+                },
+                {
+                    "command": "duffle.refreshRepoExplorer",
+                    "when": "view == duffle.repoExplorer"
+                }
+            ]
+        },
         "snippets": [
             {
                 "language": "toml",
                 "path": "./snippets/duffle.json"
             }
-        ]
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "duffle",
+                    "icon": "./images/duffle.svg",
+                    "title": "Duffle"
+                }
+            ]
+        },
+        "views": {
+            "duffle": [
+                {
+                    "id": "duffle.bundleExplorer",
+                    "name": "Bundles"
+                },
+                {
+                    "id": "duffle.repoExplorer",
+                    "name": "Repositories"
+                }
+            ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
@@ -37,6 +132,12 @@
         "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "dependencies": {
+        "@types/lodash": "^4.14.113",
+        "@types/shelljs": "^0.8.0",
+        "lodash": "^4.17.10",
+        "shelljs": "^0.7.7"
     },
     "devDependencies": {
         "typescript": "^2.6.1",
