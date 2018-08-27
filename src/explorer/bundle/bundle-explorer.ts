@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as duffle from '../../duffle/duffle';
 import { succeeded } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
+import { BundleRef } from '../../duffle/duffle.objectmodel';
 
 export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -39,15 +40,17 @@ interface BundleExplorerNode {
     getTreeItem(): vscode.TreeItem;
 }
 
-class BundleNode implements BundleExplorerNode {
-    constructor(private readonly bundleName: string) { }
+class BundleNode implements BundleExplorerNode, BundleRef {
+    constructor(readonly bundleName: string) { }
 
     async getChildren(): Promise<BundleExplorerNode[]> {
         return [];
     }
 
     getTreeItem(): vscode.TreeItem {
-        return new vscode.TreeItem(this.bundleName, vscode.TreeItemCollapsibleState.None);
+        const treeItem = new vscode.TreeItem(this.bundleName, vscode.TreeItemCollapsibleState.None);
+        treeItem.contextValue = "duffle.bundle";
+        return treeItem;
     }
 }
 

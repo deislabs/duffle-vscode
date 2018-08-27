@@ -15,6 +15,7 @@
     "activationEvents": [
         "onLanguage:toml",
         "onCommand:duffle.refreshBundleExplorer",
+        "onCommand:duffle.bundleStatus",
         "onCommand:duffle.refreshRepoExplorer",
         "onView:duffle.bundleExplorer",
         "onView:duffle.repoExplorer"
@@ -30,6 +31,11 @@
                     "light": "images/light/refresh.svg",
                     "dark": "images/dark/refresh.svg"
                 }
+            },
+            {
+                "command": "duffle.bundleStatus",
+                "title": "Status",
+                "category": "Duffle"
             },
             {
                 "command": "duffle.refreshRepoExplorer",
@@ -69,10 +75,22 @@
                     "group": "navigation"
                 }
             ],
+            "view/item/context": [
+                {
+                    "command": "duffle.bundleStatus",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
+                    "group": "0"
+                }
+            ],
             "commandPalette": [
                 {
                     "command": "duffle.refreshBundleExplorer",
                     "when": "view == duffle.bundleExplorer"
+                },
+                {
+                    "command": "duffle.bundleStatus",
+                    "when": "view == duffle.bundleExplorer && viewItem = duffle.bundle",
+                    "group": "navigation"
                 },
                 {
                     "command": "duffle.refreshRepoExplorer",

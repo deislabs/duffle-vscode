@@ -1,7 +1,10 @@
 'use strict';
 
 import * as shelljs from 'shelljs';
+import * as path from 'path';
 import * as vscode from 'vscode';
+
+import * as config from '../config/config';
 import { Errorable } from './errorable';
 
 export enum Platform {
@@ -141,15 +144,15 @@ function unquotedPath(path: string): string {
 
 export function shellEnvironment(baseEnvironment: any): any {
     const env = Object.assign({}, baseEnvironment);
-    // const pathVariable = pathVariableName(env);
-    // for (const tool of ['kubectl', 'helm', 'draft', 'minikube']) {
-    //     const toolPath = vscode.workspace.getConfiguration('vs-kubernetes')[`vs-kubernetes.${tool}-path`];
-    //     if (toolPath) {
-    //         const toolDirectory = path.dirname(toolPath);
-    //         const currentPath = env[pathVariable];
-    //         env[pathVariable] = toolDirectory + (currentPath ? `${pathEntrySeparator()}${currentPath}` : '');
-    //     }
-    // }
+    const pathVariable = pathVariableName(env);
+    for (const tool of ['duffle']) {
+        const toolPath = config.toolPath(tool);
+        if (toolPath) {
+            const toolDirectory = path.dirname(toolPath);
+            const currentPath = env[pathVariable];
+            env[pathVariable] = toolDirectory + (currentPath ? `${pathEntrySeparator()}${currentPath}` : '');
+        }
+    }
 
     // const kubeconfig = getActiveKubeconfig();
     // if (kubeconfig) {
@@ -158,17 +161,17 @@ export function shellEnvironment(baseEnvironment: any): any {
     return env;
 }
 
-// function pathVariableName(env: any): string {
-//     if (isWindows()) {
-//         for (const v of Object.keys(env)) {
-//             if (v.toLowerCase() === "path") {
-//                 return v;
-//             }
-//         }
-//     }
-//     return "PATH";
-// }
+function pathVariableName(env: any): string {
+    if (isWindows()) {
+        for (const v of Object.keys(env)) {
+            if (v.toLowerCase() === "path") {
+                return v;
+            }
+        }
+    }
+    return "PATH";
+}
 
-// function pathEntrySeparator() {
-//     return isWindows() ? ';' : ':';
-// }
+function pathEntrySeparator() {
+    return isWindows() ? ';' : ':';
+}
