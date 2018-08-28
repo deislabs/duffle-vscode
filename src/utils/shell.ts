@@ -14,6 +14,10 @@ export enum Platform {
     Unsupported,  // shouldn't happen!
 }
 
+export interface ExecOpts {
+    readonly cwd?: string;
+}
+
 export interface Shell {
     isWindows(): boolean;
     isUnix(): boolean;
@@ -23,7 +27,7 @@ export interface Shell {
     fileUri(filePath: string): vscode.Uri;
     execOpts(): any;
     exec(cmd: string, stdin?: string): Promise<Errorable<ShellResult>>;
-    execObj<T>(cmd: string, cmdDesc: string, fn: (stdout: string) => T): Promise<Errorable<T>>;
+    execObj<T>(cmd: string, cmdDesc: string, opts: ExecOpts, fn: (stdout: string) => T): Promise<Errorable<T>>;
     execCore(cmd: string, opts: any, stdin?: string): Promise<ShellResult>;
     unquotedPath(path: string): string;
 }
@@ -111,19 +115,19 @@ async function exec(cmd: string, stdin?: string): Promise<Errorable<ShellResult>
     }
 }
 
-async function execObj<T>(cmd: string, cmdDesc: string, fn: ((stdout: string) => T)): Promise<Errorable<T>> {
-    const sr = await exec(cmd);
-    if (sr.succeeded) {
-        if (sr.result.code === 0) {
-            const value = fn(sr.result.stdout);
+async function execObj<T>(cmd: string, cmdDesc: string, opts: ExecOpts, fn: ((stdout: string) => T)): Promise<Errorable<T>> {
+    const o = Object.assign({}, execOpts(), opts);
+    try {
+        const sr = await execCore(cmd, o);
+        if (sr.code === 0) {
+            const value = fn(sr.stdout);
             return { succeeded: true, result: value };
         } else {
-            return { succeeded: false, error: [`${cmdDesc} error: ${sr.result.stderr}`] };
+            return { succeeded: false, error: [`${cmdDesc} error: ${sr.stderr}`] };
         }
-    } else {
-        return { succeeded: false, error: sr.error };
+    } catch (ex) {
+        return { succeeded: false, error: [`Error invoking '${cmd}: ${ex}`] };
     }
-
 }
 
 function execCore(cmd: string, opts: any, stdin?: string): Promise<ShellResult> {

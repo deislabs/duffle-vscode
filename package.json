@@ -16,6 +16,7 @@
         "onLanguage:toml",
         "onCommand:duffle.refreshBundleExplorer",
         "onCommand:duffle.bundleStatus",
+        "onCommand:duffle.build",
         "onCommand:duffle.refreshRepoExplorer",
         "onView:duffle.bundleExplorer",
         "onView:duffle.repoExplorer"
@@ -35,6 +36,11 @@
             {
                 "command": "duffle.bundleStatus",
                 "title": "Status",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.build",
+                "title": "Build",
                 "category": "Duffle"
             },
             {
