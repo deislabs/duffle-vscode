@@ -7,6 +7,7 @@ import { Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
 
 let sharedTerminalObj: vscode.Terminal | null = null;
+const logChannel = vscode.window.createOutputChannel("Duffle");
 
 function sharedTerminal(): vscode.Terminal {
     if (sharedTerminalObj) {
@@ -35,11 +36,13 @@ function sharedTerminal(): vscode.Terminal {
 
 async function invokeObj<T>(sh: shell.Shell, command: string, args: string, opts: shell.ExecOpts, fn: (stdout: string) => T): Promise<Errorable<T>> {
     const bin = config.dufflePath() || 'duffle';
+    const cmd = `${bin} ${command} ${args}`;
+    logChannel.appendLine(`$ ${cmd}`);
     return await sh.execObj<T>(
-        `${bin} ${command} ${args}`,
+        cmd,
         `duffle ${command}`,
         opts,
-        fn
+        andLog(fn)
     );
 }
 
@@ -47,6 +50,13 @@ function invokeInTerminal(command: string): void {
     const fullCommand = `duffle ${command}`;
     sharedTerminal().sendText(fullCommand);
     sharedTerminal().show();
+}
+
+function andLog<T>(fn: (s: string) => T): (s: string) => T {
+    return (s: string) => {
+        logChannel.appendLine(s);
+        return fn(s);
+    };
 }
 
 export function list(sh: shell.Shell): Promise<Errorable<string[]>> {
