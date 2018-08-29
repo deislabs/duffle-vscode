@@ -3,8 +3,9 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import * as duffle from '../../duffle/duffle';
-import { succeeded } from '../../utils/errorable';
+import { succeeded, failed } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
+import { RepoBundle } from '../../duffle/duffle.objectmodel';
 
 export class RepoExplorer implements vscode.TreeDataProvider<RepoExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -20,7 +21,7 @@ export class RepoExplorer implements vscode.TreeDataProvider<RepoExplorerNode> {
         if (!element) {
             return getRootNodes(this.shell);
         }
-        return element.getChildren();
+        return element.getChildren(this.shell);
     }
 
     refresh(): void {
@@ -40,19 +41,30 @@ async function getRootNodes(shell: Shell): Promise<RepoExplorerNode[]> {
 }
 
 interface RepoExplorerNode {
-    getChildren(): Promise<RepoExplorerNode[]>;
+    getChildren(shell: Shell): Promise<RepoExplorerNode[]>;
     getTreeItem(): vscode.TreeItem;
 }
 
 class RepoNode implements RepoExplorerNode {
     constructor(private readonly path: string[], private readonly all: string[][]) { }
 
-    async getChildren(): Promise<RepoExplorerNode[]> {
+    async getChildren(shell: Shell): Promise<RepoExplorerNode[]> {
         const remainders = this.getSubPaths();
         const firsts = remainders.map((p) => p[0]);
         const uniqueFirsts = _.uniq(firsts);
         const prefixes = uniqueFirsts.map((a) => Array<string>().concat(this.path, [a]));
-        return prefixes.map((p) => new RepoNode(p, this.all));
+
+        if (prefixes.length > 0) {
+            return prefixes.map((p) => new RepoNode(p, this.all));
+        }
+
+        const bundles = await duffle.search(shell);
+        if (failed(bundles)) {
+            return [new ErrorNode(bundles.error[0])];
+        }
+        return bundles.result
+            .filter((rb) => rb.repository === this.path.join('/'))
+            .map((rb) => new RepoBundleNode(rb));
     }
 
     getSubPaths(): string[][] {
@@ -63,8 +75,7 @@ class RepoNode implements RepoExplorerNode {
     }
 
     getTreeItem(): vscode.TreeItem {
-        const hasChildren = this.getSubPaths().length > 0;
-        return new vscode.TreeItem(this.path[this.path.length - 1], hasChildren ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
+        return new vscode.TreeItem(this.path[this.path.length - 1], vscode.TreeItemCollapsibleState.Collapsed);
     }
 
     private isSubPathOf(p: string[], path: string[]): boolean {
@@ -78,6 +89,18 @@ class RepoNode implements RepoExplorerNode {
             return true;
         }
         return this.isSubPathOf(_.slice(p, 1), _.slice(path, 1));
+    }
+}
+
+class RepoBundleNode implements RepoExplorerNode {
+    constructor(private readonly bundle: RepoBundle) { }
+
+    async getChildren(shell: Shell): Promise<RepoExplorerNode[]> {
+        return [];
+    }
+
+    getTreeItem(): vscode.TreeItem {
+        return new vscode.TreeItem(this.bundle.name, vscode.TreeItemCollapsibleState.None);
     }
 }
 
