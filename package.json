@@ -16,6 +16,9 @@
         "onLanguage:toml",
         "onCommand:duffle.refreshBundleExplorer",
         "onCommand:duffle.bundleStatus",
+        "onCommand:duffle.bundleUpgrade",
+        "onCommand:duffle.build",
+        "onCommand:duffle.install",
         "onCommand:duffle.refreshRepoExplorer",
         "onView:duffle.bundleExplorer",
         "onView:duffle.repoExplorer"
@@ -35,6 +38,21 @@
             {
                 "command": "duffle.bundleStatus",
                 "title": "Status",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.bundleUpgrade",
+                "title": "Upgrade",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.build",
+                "title": "Build Bundle",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.install",
+                "title": "Install Bundle",
                 "category": "Duffle"
             },
             {
@@ -80,6 +98,18 @@
                     "command": "duffle.bundleStatus",
                     "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
                     "group": "0"
+                },
+                {
+                    "command": "duffle.bundleUpgrade",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
+                    "group": "1"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "duffle.install",
+                    "when": "resourceFilename == bundle.json",
+                    "group": "9"
                 }
             ],
             "commandPalette": [
