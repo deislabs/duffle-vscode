@@ -40,12 +40,12 @@
             },
             {
                 "command": "duffle.build",
-                "title": "Build",
+                "title": "Build Bundle",
                 "category": "Duffle"
             },
             {
                 "command": "duffle.install",
-                "title": "Install",
+                "title": "Install Bundle",
                 "category": "Duffle"
             },
             {
@@ -91,6 +91,13 @@
                     "command": "duffle.bundleStatus",
                     "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
                     "group": "0"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "duffle.install",
+                    "when": "resourceFilename == bundle.json",
+                    "group": "9"
                 }
             ],
             "commandPalette": [

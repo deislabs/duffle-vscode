@@ -57,24 +57,37 @@ async function build(): Promise<void> {
     }
 }
 
-async function install(): Promise<void> {
+interface BundleSelection {
+    readonly label: string;
+    readonly path: string;
+}
+
+async function install(file?: vscode.Uri): Promise<void> {
+    if (file) {
+        if (file.scheme !== 'file') {
+            vscode.window.showErrorMessage("This command requires a filesystem bundle");
+            return;
+        }
+        return await installCore(bundleSelection(file));
+    }
+
     const bundles = await vscode.workspace.findFiles('**/cnab/bundle.json');
     if (!bundles || bundles.length === 0) {
         await vscode.window.showErrorMessage("This command requires a bundle file in the current workspace.");
         return;
     }
 
-    const bundleFolders = bundles.map((b) => path.dirname(path.dirname(b.fsPath)));
-    const bundleQuickPicks = bundleFolders.map((f) => ({
-        label: path.basename(f),
-        path: f
-    }));
+    const bundleQuickPicks = bundles.map(bundleSelection);
 
     const bundlePick = await selectQuickPick(bundleQuickPicks, { placeHolder: "Select the bundle to install " });
     if (!bundlePick) {
         return;
     }
 
+    return await installCore(bundlePick);
+}
+
+async function installCore(bundlePick: BundleSelection): Promise<void> {
     const name = await vscode.window.showInputBox({ prompt: `Install bundle in ${bundlePick.label} as...`, value: bundlePick.label });
     if (!name) {
         return;
@@ -92,6 +105,14 @@ async function install(): Promise<void> {
         await vscode.commands.executeCommand("duffle.refreshBundleExplorer");
         await vscode.window.showInformationMessage(`Duffle install complete for ${bundlePath}`);
     }
+}
+
+function bundleSelection(bundleFile: vscode.Uri): BundleSelection {
+    const bundleDir = path.dirname(path.dirname(bundleFile.fsPath));
+    return {
+        label: path.basename(bundleDir),
+        path: bundleDir
+    };
 }
 
 function bundleStatus(bundle: BundleRef) {
