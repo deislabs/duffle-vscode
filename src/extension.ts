@@ -20,6 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
     const subscriptions = [
         vscode.commands.registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
         vscode.commands.registerCommand('duffle.bundleStatus', (node) => bundleStatus(node)),
+        vscode.commands.registerCommand('duffle.bundleUpgrade', (node) => bundleUpgrade(node)),
         vscode.commands.registerCommand('duffle.build', build),
         vscode.commands.registerCommand('duffle.install', install),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
@@ -117,4 +118,16 @@ function bundleSelection(bundleFile: vscode.Uri): BundleSelection {
 
 function bundleStatus(bundle: BundleRef) {
     duffle.showStatus(bundle.bundleName);
+}
+
+async function bundleUpgrade(bundle: BundleRef): Promise<void> {
+    const upgradeResult = await longRunning(`Duffle upgrading ${bundle.bundleName}`,
+        () => duffle.upgrade(shell.shell, bundle.bundleName)
+    );
+
+    if (failed(upgradeResult)) {
+        await vscode.window.showErrorMessage(`Duffle upgrade failed: ${upgradeResult.error[0]}`);
+    } else {
+        await vscode.window.showInformationMessage(`Duffle upgrade complete for ${bundle.bundleName}`);
+    }
 }

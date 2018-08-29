@@ -67,6 +67,10 @@ export function listRepos(sh: shell.Shell): Promise<Errorable<string[]>> {
     return invokeObj(sh, 'repo list', '', {}, parse);
 }
 
+export async function upgrade(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'upgrade', bundleName, {}, (s) => null);
+}
+
 export function showStatus(bundleName: string): void {
     invokeInTerminal(`status ${bundleName}`);
 }
