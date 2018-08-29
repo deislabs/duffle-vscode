@@ -44,6 +44,11 @@
                 "category": "Duffle"
             },
             {
+                "command": "duffle.install",
+                "title": "Install",
+                "category": "Duffle"
+            },
+            {
                 "command": "duffle.refreshRepoExplorer",
                 "title": "Refresh Repo Explorer",
                 "category": "Duffle",

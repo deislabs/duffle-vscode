@@ -79,3 +79,7 @@ export async function build(sh: shell.Shell, folderPath: string): Promise<Errora
     // duffle build works *only* from the folder containing duffle.toml
     return await invokeObj(sh, 'build', '.', { cwd: folderPath }, (s) => null);
 }
+
+export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'install', `${name} -f "${bundleFilePath}"`, {}, (s) => null);
+}
