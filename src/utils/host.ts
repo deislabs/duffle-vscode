@@ -21,3 +21,11 @@ export async function selectQuickPick<T extends vscode.QuickPickItem>(items: T[]
     }
     return await vscode.window.showQuickPick(items, options);
 }
+
+export async function longRunning<T>(title: string, action: () => Promise<T>): Promise<T> {
+    const options = {
+        location: vscode.ProgressLocation.Notification,
+        title: title
+    };
+    return await vscode.window.withProgress(options, (_) => action());
+}

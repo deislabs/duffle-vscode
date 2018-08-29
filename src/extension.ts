@@ -9,7 +9,7 @@ import { RepoExplorer } from './explorer/repo/repo-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
-import { selectWorkspaceFolder, selectQuickPick } from './utils/host';
+import { selectWorkspaceFolder, selectQuickPick, longRunning } from './utils/host';
 import { failed } from './utils/errorable';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -46,7 +46,9 @@ async function build(): Promise<void> {
     }
 
     const folderPath = folder.uri.fsPath;
-    const buildResult = await duffle.build(shell.shell, folderPath);
+    const buildResult = await longRunning(`Duffle building ${folderPath}`,
+        () => duffle.build(shell.shell, folderPath)
+    );
 
     if (failed(buildResult)) {
         await vscode.window.showErrorMessage(`Duffle build failed: ${buildResult.error[0]}`);
@@ -80,7 +82,9 @@ async function install(): Promise<void> {
 
     const folderPath = bundlePick.path;
     const bundlePath = path.join(folderPath, "cnab", "bundle.json");
-    const installResult = await duffle.installFile(shell.shell, bundlePath, name);
+    const installResult = await longRunning(`Duffle installing ${bundlePath}`,
+        () => duffle.installFile(shell.shell, bundlePath, name)
+    );
 
     if (failed(installResult)) {
         await vscode.window.showErrorMessage(`Duffle install failed: ${installResult.error[0]}`);
