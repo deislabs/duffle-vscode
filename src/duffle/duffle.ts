@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import * as config from '../config/config';
 import { Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
+import { RepoBundle } from './duffle.objectmodel';
 
 let sharedTerminalObj: vscode.Terminal | null = null;
 const logChannel = vscode.window.createOutputChannel("Duffle");
@@ -77,6 +78,16 @@ export function listRepos(sh: shell.Shell): Promise<Errorable<string[]>> {
     return invokeObj(sh, 'repo list', '', {}, parse);
 }
 
+export function search(sh: shell.Shell): Promise<Errorable<RepoBundle[]>> {
+    function parse(stdout: string): RepoBundle[] {
+        const lines = stdout.split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0);
+        return fromHeaderedTable<RepoBundle>(lines);
+    }
+    return invokeObj(sh, 'search', '', {}, parse);
+}
+
 export async function upgrade(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
     return await invokeObj(sh, 'upgrade', bundleName, {}, (s) => null);
 }
@@ -96,4 +107,28 @@ export async function build(sh: shell.Shell, folderPath: string): Promise<Errora
 
 export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string): Promise<Errorable<null>> {
     return await invokeObj(sh, 'install', `${name} -f "${bundleFilePath}"`, {}, (s) => null);
+}
+
+export async function installBundle(sh: shell.Shell, bundleName: string, name: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'install', `${name} ${bundleName}`, {}, (s) => null);
+}
+
+function fromHeaderedTable<T>(lines: string[]): T[] {
+    if (lines.length === 0) {
+        return [];
+    }
+    const headerLine = lines[0].split(/\s+/);
+    const valueLines = lines.slice(1).map((l) => l.split(/\s+/));
+
+    const values = valueLines.map((l) => asObj<T>(headerLine, l));
+    return values;
+}
+
+function asObj<T>(labels: string[], columns: string[]): T {
+    const o: any = {};
+    for (const index in columns) {
+        // TODO: improve flexibility and safety
+        o[labels[index].toLowerCase()] = columns[index];
+    }
+    return o;
 }

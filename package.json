@@ -103,6 +103,11 @@
                     "command": "duffle.bundleUpgrade",
                     "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
                     "group": "1"
+                },
+                {
+                    "command": "duffle.install",
+                    "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
+                    "group": "1"
                 }
             ],
             "explorer/context": [
