@@ -155,7 +155,7 @@ function repoBundleSelection(bundle: RepoBundle): BundleSelection {
         kind: 'repo',
         label: bundle.name,
         path: '',
-        bundle: bundle.name
+        bundle: `${bundle.repository}/${bundle.name}`
     };
 }
 
