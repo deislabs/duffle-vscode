@@ -109,6 +109,10 @@ export async function installFile(sh: shell.Shell, bundleFilePath: string, name:
     return await invokeObj(sh, 'install', `${name} -f "${bundleFilePath}"`, {}, (s) => null);
 }
 
+export async function installBundle(sh: shell.Shell, bundleName: string, name: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'install', `${name} ${bundleName}`, {}, (s) => null);
+}
+
 function fromHeaderedTable<T>(lines: string[]): T[] {
     if (lines.length === 0) {
         return [];

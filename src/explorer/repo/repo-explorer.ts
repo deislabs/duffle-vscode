@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as duffle from '../../duffle/duffle';
 import { succeeded, failed } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
-import { RepoBundle } from '../../duffle/duffle.objectmodel';
+import { RepoBundle, RepoBundleRef } from '../../duffle/duffle.objectmodel';
 
 export class RepoExplorer implements vscode.TreeDataProvider<RepoExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -92,15 +92,17 @@ class RepoNode implements RepoExplorerNode {
     }
 }
 
-class RepoBundleNode implements RepoExplorerNode {
-    constructor(private readonly bundle: RepoBundle) { }
+class RepoBundleNode implements RepoExplorerNode, RepoBundleRef {
+    constructor(readonly bundle: RepoBundle) { }
 
     async getChildren(shell: Shell): Promise<RepoExplorerNode[]> {
         return [];
     }
 
     getTreeItem(): vscode.TreeItem {
-        return new vscode.TreeItem(this.bundle.name, vscode.TreeItemCollapsibleState.None);
+        const treeItem = new vscode.TreeItem(this.bundle.name, vscode.TreeItemCollapsibleState.None);
+        treeItem.contextValue = "duffle.repoBundle";
+        return treeItem;
     }
 }
 

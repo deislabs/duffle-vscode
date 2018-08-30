@@ -3,14 +3,14 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { BundleRef } from './duffle/duffle.objectmodel';
+import { BundleRef, RepoBundleRef, RepoBundle } from './duffle/duffle.objectmodel';
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { RepoExplorer } from './explorer/repo/repo-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
 import { selectWorkspaceFolder, selectQuickPick, longRunning } from './utils/host';
-import { failed } from './utils/errorable';
+import { failed, Errorable, map } from './utils/errorable';
 
 export function activate(context: vscode.ExtensionContext) {
     const bundleExplorer = new BundleExplorer(shell.shell);
@@ -59,19 +59,26 @@ async function build(): Promise<void> {
 }
 
 interface BundleSelection {
+    readonly kind: 'folder' | 'repo';
     readonly label: string;
     readonly path: string;
+    readonly bundle: string;
 }
 
-async function install(file?: vscode.Uri): Promise<void> {
-    if (file) {
-        if (file.scheme !== 'file') {
-            vscode.window.showErrorMessage("This command requires a filesystem bundle");
-            return;
-        }
-        return await installCore(bundleSelection(file));
+async function install(target?: any): Promise<void> {
+    if (!target) {
+        return await installPrompted();
     }
+    if (target.scheme) {
+        return await installFile(target as vscode.Uri);
+    }
+    if (target.bundle) {
+        return await installRepoBundle((target as RepoBundleRef).bundle);
+    }
+    await vscode.window.showErrorMessage("Internal error: unexpected command target");
+}
 
+async function installPrompted(): Promise<void> {
     const bundles = await vscode.workspace.findFiles('**/cnab/bundle.json');
     if (!bundles || bundles.length === 0) {
         await vscode.window.showErrorMessage("This command requires a bundle file in the current workspace.");
@@ -88,31 +95,67 @@ async function install(file?: vscode.Uri): Promise<void> {
     return await installCore(bundlePick);
 }
 
+async function installFile(file: vscode.Uri): Promise<void> {
+    if (file.scheme !== 'file') {
+        vscode.window.showErrorMessage("This command requires a filesystem bundle");
+        return;
+    }
+    return await installCore(bundleSelection(file));
+}
+
+async function installRepoBundle(bundle: RepoBundle): Promise<void> {
+    return await installCore(bundleSelectionR(bundle));
+}
+
 async function installCore(bundlePick: BundleSelection): Promise<void> {
     const name = await vscode.window.showInputBox({ prompt: `Install bundle in ${bundlePick.label} as...`, value: bundlePick.label });
     if (!name) {
         return;
     }
 
-    const folderPath = bundlePick.path;
-    const bundlePath = path.join(folderPath, "cnab", "bundle.json");
-    const installResult = await longRunning(`Duffle installing ${bundlePath}`,
-        () => duffle.installFile(shell.shell, bundlePath, name)
-    );
+    const installResult = await installTo(bundlePick, name);
 
     if (failed(installResult)) {
         await vscode.window.showErrorMessage(`Duffle install failed: ${installResult.error[0]}`);
     } else {
         await vscode.commands.executeCommand("duffle.refreshBundleExplorer");
-        await vscode.window.showInformationMessage(`Duffle install complete for ${bundlePath}`);
+        await vscode.window.showInformationMessage(`Duffle install complete for ${installResult.result}`);
     }
+}
+
+async function installTo(bundlePick: BundleSelection, name: string): Promise<Errorable<string>> {
+    if (bundlePick.kind === 'folder') {
+        const folderPath = bundlePick.path;
+        const bundlePath = path.join(folderPath, "cnab", "bundle.json");
+        const installResult = await longRunning(`Duffle installing ${bundlePath}`,
+            () => duffle.installFile(shell.shell, bundlePath, name)
+        );
+        return map(installResult, (_) => bundlePath);
+    } else if (bundlePick.kind === 'repo') {
+        const installResult = await longRunning(`Duffle installing ${bundlePick.bundle}`,
+            () => duffle.installBundle(shell.shell, bundlePick.bundle, name)
+        );
+        return map(installResult, (_) => bundlePick.bundle);
+    }
+    return { succeeded: false, error: [`Internal error: unknown bundle installation source ${bundlePick.kind}`] };
 }
 
 function bundleSelection(bundleFile: vscode.Uri): BundleSelection {
     const bundleDir = path.dirname(path.dirname(bundleFile.fsPath));
     return {
+        kind: 'folder',
         label: path.basename(bundleDir),
-        path: bundleDir
+        path: bundleDir,
+        bundle: ''
+    };
+}
+
+function bundleSelectionR(bundle: RepoBundle): BundleSelection {
+    return {
+        kind: 'repo',
+        label: bundle.name,
+        path: '',
+        bundle: bundle.name
     };
 }
 
