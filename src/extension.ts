@@ -85,7 +85,7 @@ async function installPrompted(): Promise<void> {
         return;
     }
 
-    const bundleQuickPicks = bundles.map(bundleSelection);
+    const bundleQuickPicks = bundles.map(fileBundleSelection);
 
     const bundlePick = await selectQuickPick(bundleQuickPicks, { placeHolder: "Select the bundle to install " });
     if (!bundlePick) {
@@ -100,11 +100,11 @@ async function installFile(file: vscode.Uri): Promise<void> {
         vscode.window.showErrorMessage("This command requires a filesystem bundle");
         return;
     }
-    return await installCore(bundleSelection(file));
+    return await installCore(fileBundleSelection(file));
 }
 
 async function installRepoBundle(bundle: RepoBundle): Promise<void> {
-    return await installCore(bundleSelectionR(bundle));
+    return await installCore(repoBundleSelection(bundle));
 }
 
 async function installCore(bundlePick: BundleSelection): Promise<void> {
@@ -140,7 +140,7 @@ async function installTo(bundlePick: BundleSelection, name: string): Promise<Err
     return { succeeded: false, error: [`Internal error: unknown bundle installation source ${bundlePick.kind}`] };
 }
 
-function bundleSelection(bundleFile: vscode.Uri): BundleSelection {
+function fileBundleSelection(bundleFile: vscode.Uri): BundleSelection {
     const bundleDir = path.dirname(path.dirname(bundleFile.fsPath));
     return {
         kind: 'folder',
@@ -150,7 +150,7 @@ function bundleSelection(bundleFile: vscode.Uri): BundleSelection {
     };
 }
 
-function bundleSelectionR(bundle: RepoBundle): BundleSelection {
+function repoBundleSelection(bundle: RepoBundle): BundleSelection {
     return {
         kind: 'repo',
         label: bundle.name,
