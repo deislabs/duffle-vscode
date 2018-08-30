@@ -4,7 +4,8 @@
         "body": [
             "name = \"$1\"",
             "registry = \"$2\"",
-            "components = [\"$3\"]"
+            "driver = \"$3\"",
+            "components = [\"cnab\"]"
         ],
         "description": "Create a duffle.toml file"
     }
