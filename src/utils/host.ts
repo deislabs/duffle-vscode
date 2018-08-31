@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 
+import { Errorable, failed } from './errorable';
+
 export async function selectWorkspaceFolder(placeHolder?: string): Promise<vscode.WorkspaceFolder | undefined> {
     const folders = vscode.workspace.workspaceFolders;
 
@@ -28,4 +30,24 @@ export async function longRunning<T>(title: string, action: () => Promise<T>): P
         title: title
     };
     return await vscode.window.withProgress(options, (_) => action());
+}
+
+export async function showDuffleResult<T>(command: string, resource: string | ((r: T) => string), duffleResult: Errorable<T>): Promise<void> {
+    if (failed(duffleResult)) {
+        // The invocation infrastructure adds blurb about what command failed, and
+        // Duffle's CLI parser adds 'Error:'. We don't need that here because we're
+        // going to prepend our own blurb.
+        const message = trimPrefix(duffleResult.error[0], `duffle ${command} error: Error:`).trim();
+        await vscode.window.showErrorMessage(`Duffle ${command} failed: ${message}`);
+    } else {
+        const resourceText = resource instanceof Function ? resource(duffleResult.result) : resource;
+        await vscode.window.showInformationMessage(`Duffle ${command} complete for ${resourceText}`);
+    }
+}
+
+function trimPrefix(text: string, prefix: string): string {
+    if (text.startsWith(prefix)) {
+        return text.substring(prefix.length);
+    }
+    return text;
 }
