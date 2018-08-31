@@ -10,7 +10,7 @@ import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
 import { selectWorkspaceFolder, selectQuickPick, longRunning } from './utils/host';
-import { failed, Errorable, map } from './utils/errorable';
+import { failed, Errorable, map, succeeded } from './utils/errorable';
 
 export function activate(context: vscode.ExtensionContext) {
     const bundleExplorer = new BundleExplorer(shell.shell);
@@ -51,11 +51,7 @@ async function build(): Promise<void> {
         () => duffle.build(shell.shell, folderPath)
     );
 
-    if (failed(buildResult)) {
-        await vscode.window.showErrorMessage(`Duffle build failed: ${buildResult.error[0]}`);
-    } else {
-        await vscode.window.showInformationMessage(`Duffle build complete for ${folderPath}`);
-    }
+    await showDuffleResult('build', folderPath, buildResult);
 }
 
 interface BundleSelection {
@@ -115,12 +111,11 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
 
     const installResult = await installTo(bundlePick, name);
 
-    if (failed(installResult)) {
-        await vscode.window.showErrorMessage(`Duffle install failed: ${installResult.error[0]}`);
-    } else {
+    if (succeeded(installResult)) {
         await vscode.commands.executeCommand("duffle.refreshBundleExplorer");
-        await vscode.window.showInformationMessage(`Duffle install complete for ${installResult.result}`);
     }
+
+    await showDuffleResult('install', (bundleId) => bundleId, installResult);
 }
 
 async function installTo(bundlePick: BundleSelection, name: string): Promise<Errorable<string>> {
@@ -168,9 +163,25 @@ async function bundleUpgrade(bundle: BundleRef): Promise<void> {
         () => duffle.upgrade(shell.shell, bundle.bundleName)
     );
 
-    if (failed(upgradeResult)) {
-        await vscode.window.showErrorMessage(`Duffle upgrade failed: ${upgradeResult.error[0]}`);
+    await showDuffleResult('upgrade', bundle.bundleName, upgradeResult);
+}
+
+async function showDuffleResult<T>(command: string, resource: string | ((r: T) => string), duffleResult: Errorable<T>): Promise<void> {
+    if (failed(duffleResult)) {
+        // The invocation infrastructure adds blurb about what command failed, and
+        // Duffle's CLI parser adds 'Error:'. We don't need that here because we're
+        // going to prepend our own blurb.
+        const message = trimPrefix(duffleResult.error[0], `duffle ${command} error: Error:`).trim();
+        await vscode.window.showErrorMessage(`Duffle ${command} failed: ${message}`);
     } else {
-        await vscode.window.showInformationMessage(`Duffle upgrade complete for ${bundle.bundleName}`);
+        const resourceText = resource instanceof Function ? resource(duffleResult.result) : resource;
+        await vscode.window.showInformationMessage(`Duffle ${command} complete for ${resourceText}`);
     }
+}
+
+function trimPrefix(text: string, prefix: string): string {
+    if (text.startsWith(prefix)) {
+        return text.substring(prefix.length);
+    }
+    return text;
 }
