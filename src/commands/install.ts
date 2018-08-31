@@ -6,13 +6,21 @@ import * as duffle from '../duffle/duffle';
 import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
 import { succeeded, map, Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
+import { cantHappen } from '../utils/never';
 
-interface BundleSelection {
-    readonly kind: 'folder' | 'repo';
+interface FolderBundleSelection {
+    readonly kind: 'folder';
     readonly label: string;
     readonly path: string;
+}
+
+interface RepoBundleSelection {
+    readonly kind: 'repo';
+    readonly label: string;
     readonly bundle: string;
 }
+
+type BundleSelection = FolderBundleSelection | RepoBundleSelection;
 
 export async function install(target?: any): Promise<void> {
     if (!target) {
@@ -85,7 +93,7 @@ async function installTo(bundlePick: BundleSelection, name: string): Promise<Err
         );
         return map(installResult, (_) => bundlePick.bundle);
     }
-    return { succeeded: false, error: [`Internal error: unknown bundle installation source ${bundlePick.kind}`] };
+    return cantHappen(bundlePick);
 }
 
 function fileBundleSelection(bundleFile: vscode.Uri): BundleSelection {
@@ -93,8 +101,7 @@ function fileBundleSelection(bundleFile: vscode.Uri): BundleSelection {
     return {
         kind: 'folder',
         label: path.basename(bundleDir),
-        path: bundleDir,
-        bundle: ''
+        path: bundleDir
     };
 }
 
@@ -102,7 +109,6 @@ function repoBundleSelection(bundle: RepoBundle): BundleSelection {
     return {
         kind: 'repo',
         label: bundle.name,
-        path: '',
         bundle: `${bundle.repository}/${bundle.name}`
     };
 }
