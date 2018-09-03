@@ -6,34 +6,9 @@ import * as config from '../config/config';
 import { Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { RepoBundle } from './duffle.objectmodel';
+import { sharedTerminal } from './sharedterminal';
 
-let sharedTerminalObj: vscode.Terminal | null = null;
 const logChannel = vscode.window.createOutputChannel("Duffle");
-
-function sharedTerminal(): vscode.Terminal {
-    if (sharedTerminalObj) {
-        return sharedTerminalObj;
-    }
-
-    const terminalOptions = {
-        name: 'Duffle',
-        env: shell.shellEnvironment(process.env)
-    };
-    sharedTerminalObj = vscode.window.createTerminal(terminalOptions);
-    const disposable = vscode.window.onDidCloseTerminal((t) => {
-        if (t === sharedTerminalObj) {
-            sharedTerminalObj = null;
-            disposable.dispose();
-        }
-    });
-    vscode.workspace.onDidChangeConfiguration((change) => {
-        if (config.affectsExtensionConfiguration(change) && sharedTerminalObj) {
-            sharedTerminalObj.dispose();
-        }
-    });
-
-    return sharedTerminalObj;
-}
 
 async function invokeObj<T>(sh: shell.Shell, command: string, args: string, opts: shell.ExecOpts, fn: (stdout: string) => T): Promise<Errorable<T>> {
     const bin = config.dufflePath() || 'duffle';
