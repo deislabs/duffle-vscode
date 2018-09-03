@@ -13,7 +13,7 @@ export class DuffleTOMLCompletionProvider implements vscode.CompletionItemProvid
             const completionItems =
                 subdirectories(tomlPath)
                     .filter((d) => !d.startsWith('.'))
-                    .map((d) => new vscode.CompletionItem(`"${d}"`));
+                    .map((d) => new vscode.CompletionItem(`${d}`));
             return new vscode.CompletionList(completionItems);
         }
 
@@ -28,9 +28,5 @@ function subdirectories(filePath: string): string[] {
 }
 
 function shouldPrompt(lineUntil: string): boolean {
-    if (lineUntil.indexOf("components") < 0) {
-        return false;
-    }
-    return (lineUntil.endsWith("["))
-        || (lineUntil.endsWith(",") && lineUntil.indexOf("[") >= 0 && lineUntil.indexOf("]") < 0);
+    return lineUntil.endsWith("components.");
 }

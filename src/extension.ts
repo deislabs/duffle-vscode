@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.repoExplorer", repoExplorer),
-        vscode.languages.registerCompletionItemProvider({ language: 'toml', pattern: '**/duffle.toml', scheme: 'file' }, duffleTOMLCompletionProvider, '[', ',')
+        vscode.languages.registerCompletionItemProvider({ language: 'toml', pattern: '**/duffle.toml', scheme: 'file' }, duffleTOMLCompletionProvider)
     ];
 
     context.subscriptions.push(...subscriptions);
