@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import * as vscode from 'vscode';
+
+import { subdirectoriesFromFile } from '../utils/fsutils';
 
 export class DuffleTOMLCompletionProvider implements vscode.CompletionItemProvider {
     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
@@ -11,7 +11,7 @@ export class DuffleTOMLCompletionProvider implements vscode.CompletionItemProvid
         if (shouldPrompt(lineUntil)) {
             const tomlPath = document.uri.fsPath;
             const completionItems =
-                subdirectories(tomlPath)
+                subdirectoriesFromFile(tomlPath)
                     .filter((d) => !d.startsWith('.'))
                     .map((d) => new vscode.CompletionItem(`${d}`));
             return new vscode.CompletionList(completionItems);
@@ -19,12 +19,6 @@ export class DuffleTOMLCompletionProvider implements vscode.CompletionItemProvid
 
         return [];
     }
-}
-
-function subdirectories(filePath: string): string[] {
-    const fileDir = path.dirname(filePath);
-    const entries = fs.readdirSync(fileDir);
-    return entries.filter((d) => fs.statSync(path.join(fileDir, d)).isDirectory());
 }
 
 function shouldPrompt(lineUntil: string): boolean {
