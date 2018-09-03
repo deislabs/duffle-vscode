@@ -3,8 +3,12 @@
         "prefix": "duffle.toml",
         "body": [
             "name = \"$1\"",
-            "registry = \"$2\"",
-            "components = [\"$3\"]"
+            "",
+            "[components]",
+            "    [components.cnab]",
+            "        name = \"cnab\"",
+            "        builder = \"docker\"",
+            ""
         ],
         "description": "Create a duffle.toml file"
     }
