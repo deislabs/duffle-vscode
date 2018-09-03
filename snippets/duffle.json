@@ -11,5 +11,15 @@
             ""
         ],
         "description": "Create a duffle.toml file"
+    },
+    "component": {
+        "prefix": "component",
+        "body": [
+            "    [components.$1]",
+            "        name = \"$1\"",
+            "        builder = \"${2:docker}\"",
+            ""
+        ],
+        "description": "Add a component to duffle.toml"
     }
 }
