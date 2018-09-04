@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { Linter } from './linters';
 import { subdirectoriesFromFile } from '../utils/fsutils';
+import { iter } from '../utils/iterable';
 
 export class ComponentNameMustBeSubdirectory implements Linter {
     canLint(document: vscode.TextDocument): boolean {
@@ -79,25 +80,21 @@ function isPresent(name: string, candidates: string[]): boolean {
 }
 
 function findNextNameLine(document: vscode.TextDocument, afterIndex: number): string | null {
-    const headerLineIndex = document.positionAt(afterIndex).line;
-    if (headerLineIndex >= document.lineCount - 1) {
-        // we're on the last line - don't start the loop because we'll already be
-        // off the end of the document
-        return null;
-    }
     const nameExpr = /name\s*=/;
+    return iter(sectionLines(document, afterIndex))
+        .first((l) => nameExpr.test(l));
+}
+
+function* sectionLines(document: vscode.TextDocument, afterIndex: number): IterableIterator<string> {
+    const headerLineIndex = document.positionAt(afterIndex).line;
     for (let i = headerLineIndex + 1; i < document.lineCount; ++i) {
         const line = document.lineAt(i).text.trim();
-        if (nameExpr.test(line)) {
-            return line;
-        }
         if (line.startsWith('[')) {
-            // we've entered a new section without finding a name
-            return null;
+            // we've entered a new section
+            break;
         }
+        yield line;
     }
-    // we've reached the end of the file without finding a name
-    return null;
 }
 
 function getValue(text: string): string {
