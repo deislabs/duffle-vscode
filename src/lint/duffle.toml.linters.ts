@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { Linter } from './linters';
 import { subdirectoriesFromFile } from '../utils/fsutils';
 
-export class DuffleTOMLComponentNameLinter implements Linter {
+export class ComponentNameMustBeSubdirectory implements Linter {
     canLint(document: vscode.TextDocument): boolean {
         return isDuffleTOML(document);
     }
@@ -26,7 +26,37 @@ export class DuffleTOMLComponentNameLinter implements Linter {
             const matchText = match[0];
             const componentName = namePart(matchText);
             if (!isPresent(componentName, subdirectories)) {
-                results.push(makeDiagnostic(document, index, matchText.length, componentName));
+                results.push(makeNotSubdirectoryDiagnostic(document, index, matchText.length, componentName));
+            }
+        }
+
+        return results;
+    }
+}
+
+export class ComponentNameMustMatchNameElement implements Linter {
+    canLint(document: vscode.TextDocument): boolean {
+        return isDuffleTOML(document);
+    }
+
+    async lint(document: vscode.TextDocument): Promise<vscode.Diagnostic[]> {
+        const re = /\[components\.[^\]]+\]/g;
+        const text = document.getText();
+        const results: vscode.Diagnostic[] = [];
+
+        let match: RegExpExecArray | null;
+        while ((match = re.exec(text)) !== null) {
+            const index = match.index;
+            const matchText = match[0];
+            const componentName = namePart(matchText);
+            const nameLine = findNextNameLine(document, index);
+            if (!nameLine) {
+                results.push(makeNoNameDiagnostic(document, index, matchText.length));
+                continue;
+            }
+            const nameLineName = getValue(nameLine);
+            if (nameLineName !== componentName) {
+                results.push(makeNameMismatchDiagnostic(document, index, matchText.length, componentName, nameLineName));
             }
         }
 
@@ -48,10 +78,54 @@ function isPresent(name: string, candidates: string[]): boolean {
     return candidates.indexOf(name) >= 0;
 }
 
+function findNextNameLine(document: vscode.TextDocument, afterIndex: number): string | null {
+    const headerLineIndex = document.positionAt(afterIndex).line;
+    if (headerLineIndex >= document.lineCount - 1) {
+        // we're on the last line - don't start the loop because we'll already be
+        // off the end of the document
+        return null;
+    }
+    const nameExpr = /name\s*=/;
+    for (let i = headerLineIndex + 1; i < document.lineCount; ++i) {
+        const line = document.lineAt(i).text.trim();
+        if (nameExpr.test(line)) {
+            return line;
+        }
+        if (line.startsWith('[')) {
+            // we've entered a new section without finding a name
+            return null;
+        }
+    }
+    // we've reached the end of the file without finding a name
+    return null;
+}
+
+function getValue(text: string): string {
+    const sepIndex = text.indexOf('=');
+    const value = text.substring(sepIndex + 1);
+    return unquote(value);
+}
+
+function unquote(text: string): string {
+    const s = text.trim();
+    if (s.startsWith('"') && s.endsWith('"')) {
+        return s.substring(1, s.length - 1);
+    }
+    return s;
+}
+
 function range(document: vscode.TextDocument, start: number, length: number): vscode.Range {
     return new vscode.Range(document.positionAt(start), document.positionAt(start + length));
 }
 
-function makeDiagnostic(document: vscode.TextDocument, start: number, length: number, name: string): vscode.Diagnostic {
+function makeNotSubdirectoryDiagnostic(document: vscode.TextDocument, start: number, length: number, name: string): vscode.Diagnostic {
     return new vscode.Diagnostic(range(document, start, length), `${name} is not a subdirectory`, vscode.DiagnosticSeverity.Warning);
+}
+
+function makeNoNameDiagnostic(document: vscode.TextDocument, start: number, length: number) {
+    return new vscode.Diagnostic(range(document, start, length), `Component does not contain a 'name' element`, vscode.DiagnosticSeverity.Warning);
+}
+
+function makeNameMismatchDiagnostic(document: vscode.TextDocument, start: number, length: number, titleName: string, containedName: string) {
+    return new vscode.Diagnostic(range(document, start, length), `Component name ${titleName} does not match 'name' element ${containedName}`, vscode.DiagnosticSeverity.Warning);
 }
