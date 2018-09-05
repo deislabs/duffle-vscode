@@ -2,7 +2,7 @@ export function iter<T>(i: Iterable<T>): Enumerable<T> {
     return new EnumerableImpl(i);
 }
 
-export interface Enumerable<T> {
+export interface Enumerable<T> extends Iterable<T> {
     first(predicate: (t: T) => boolean): T | null;
     map<U>(fn: (t: T) => U): Enumerable<U>;
     collect<U>(fn: (t: T) => Iterable<U>): Enumerable<U>;
@@ -12,6 +12,10 @@ export interface Enumerable<T> {
 
 class EnumerableImpl<T> implements Enumerable<T> {
     constructor(private readonly source: Iterable<T>) { }
+
+    [Symbol.iterator](): Iterator<T> {
+        return this.source[Symbol.iterator]();
+    }
 
     first(predicate: (t: T) => boolean): T | null {
         for (const item of this.source) {
