@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 
 import { Linter } from './linters';
 import { subdirectoriesFromFile } from '../utils/fsutils';
-import { iter } from '../utils/iterable';
+import { iter, Enumerable } from '../utils/iterable';
+import { matches, RegExpMatch } from '../utils/re';
 
 export class ComponentNameMustBeSubdirectory implements Linter {
     canLint(document: vscode.TextDocument): boolean {
@@ -17,21 +18,12 @@ export class ComponentNameMustBeSubdirectory implements Linter {
         const tomlPath = document.uri.fsPath;
         const subdirectories = subdirectoriesFromFile(tomlPath);
 
-        const re = /\[components\.[^\]]+\]/g;
-        const text = document.getText();
-        const results: vscode.Diagnostic[] = [];
+        const diagnostics =
+            components(document)
+                .filter((m) => !isPresent(m.componentName, subdirectories))
+                .map((m) => makeNotSubdirectoryDiagnostic(document, m.index, m.matchText.length, m.componentName));
 
-        let match: RegExpExecArray | null;
-        while ((match = re.exec(text)) !== null) {
-            const index = match.index;
-            const matchText = match[0];
-            const componentName = namePart(matchText);
-            if (!isPresent(componentName, subdirectories)) {
-                results.push(makeNotSubdirectoryDiagnostic(document, index, matchText.length, componentName));
-            }
-        }
-
-        return results;
+        return diagnostics.toArray();
     }
 }
 
@@ -41,32 +33,27 @@ export class ComponentNameMustMatchNameElement implements Linter {
     }
 
     async lint(document: vscode.TextDocument): Promise<vscode.Diagnostic[]> {
-        const re = /\[components\.[^\]]+\]/g;
-        const text = document.getText();
-        const results: vscode.Diagnostic[] = [];
+        const diagnostics =
+            components(document)
+                .collect((m) => nameDiagnostics(m, document));
 
-        let match: RegExpExecArray | null;
-        while ((match = re.exec(text)) !== null) {
-            const index = match.index;
-            const matchText = match[0];
-            const componentName = namePart(matchText);
-            const nameLine = findNextNameLine(document, index);
-            if (!nameLine) {
-                results.push(makeNoNameDiagnostic(document, index, matchText.length));
-                continue;
-            }
-            const nameLineName = getValue(nameLine);
-            if (nameLineName !== componentName) {
-                results.push(makeNameMismatchDiagnostic(document, index, matchText.length, componentName, nameLineName));
-            }
-        }
-
-        return results;
+        return diagnostics.toArray();
     }
+}
+
+interface ComponentMatch extends RegExpMatch {
+    readonly componentName: string;
 }
 
 function isDuffleTOML(document: vscode.TextDocument): boolean {
     return document.languageId === 'toml' && document.uri.toString().endsWith('duffle.toml');
+}
+
+function components(document: vscode.TextDocument): Enumerable<ComponentMatch> {
+    const re = /\[components\.[^\]]+\]/g;
+    const text = document.getText();
+    return iter(matches(re, text))
+        .map((m) => ({ componentName: namePart(m.matchText), ...m }));
 }
 
 function namePart(componentHeader: string): string {
@@ -77,6 +64,18 @@ function namePart(componentHeader: string): string {
 
 function isPresent(name: string, candidates: string[]): boolean {
     return candidates.indexOf(name) >= 0;
+}
+
+function* nameDiagnostics(component: ComponentMatch, document: vscode.TextDocument): IterableIterator<vscode.Diagnostic> {
+    const nameLine = findNextNameLine(document, component.index);
+    if (!nameLine) {
+        yield makeNoNameDiagnostic(document, component.index, component.matchText.length);
+        return;
+    }
+    const nameLineName = getValue(nameLine);
+    if (nameLineName !== component.componentName) {
+        yield makeNameMismatchDiagnostic(document, component.index, component.matchText.length, component.componentName, nameLineName);
+    }
 }
 
 function findNextNameLine(document: vscode.TextDocument, afterIndex: number): string | null {
