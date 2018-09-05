@@ -67,6 +67,10 @@ export async function upgrade(sh: shell.Shell, bundleName: string): Promise<Erro
     return await invokeObj(sh, 'upgrade', bundleName, {}, (s) => null);
 }
 
+export async function uninstall(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'uninstall', bundleName, {}, (s) => null);
+}
+
 export function showStatus(bundleName: string): void {
     invokeInTerminal(`status ${bundleName}`);
 }
