@@ -3,9 +3,23 @@
         "prefix": "duffle.toml",
         "body": [
             "name = \"$1\"",
-            "registry = \"$2\"",
-            "components = [\"$3\"]"
+            "",
+            "[components]",
+            "    [components.cnab]",
+            "        name = \"cnab\"",
+            "        builder = \"docker\"",
+            ""
         ],
         "description": "Create a duffle.toml file"
+    },
+    "component": {
+        "prefix": "component",
+        "body": [
+            "    [components.$1]",
+            "        name = \"$1\"",
+            "        builder = \"${2:docker}\"",
+            ""
+        ],
+        "description": "Add a component to duffle.toml"
     }
 }

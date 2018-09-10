@@ -10,6 +10,9 @@ import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
 import { selectWorkspaceFolder, longRunning, showDuffleResult } from './utils/host';
 import { install } from './commands/install';
+import { lintTo } from './lint/linters';
+
+const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
 export function activate(context: vscode.ExtensionContext) {
     const bundleExplorer = new BundleExplorer(shell.shell);
@@ -25,13 +28,24 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.repoExplorer", repoExplorer),
-        vscode.languages.registerCompletionItemProvider({ language: 'toml', pattern: '**/duffle.toml', scheme: 'file' }, duffleTOMLCompletionProvider, '[', ',')
+        vscode.languages.registerCompletionItemProvider({ language: 'toml', pattern: '**/duffle.toml', scheme: 'file' }, duffleTOMLCompletionProvider)
     ];
+
+    initDiagnostics();
 
     context.subscriptions.push(...subscriptions);
 }
 
 export function deactivate() {
+}
+
+function initDiagnostics() {
+    const lint = lintTo(duffleDiagnostics);
+    vscode.workspace.onDidOpenTextDocument(lint);
+    vscode.workspace.onDidChangeTextDocument((e) => lint(e.document));  // TODO: we could use the change hint
+    vscode.workspace.onDidSaveTextDocument(lint);
+    vscode.workspace.onDidCloseTextDocument((d) => duffleDiagnostics.delete(d.uri));
+    vscode.workspace.textDocuments.forEach(lint);
 }
 
 async function build(): Promise<void> {
