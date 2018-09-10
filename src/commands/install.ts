@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-import { selectQuickPick, longRunning, showDuffleResult } from '../utils/host';
+import { selectQuickPick, longRunning, showDuffleResult, refreshBundleExplorer } from '../utils/host';
 import * as duffle from '../duffle/duffle';
 import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
 import { succeeded, map, Errorable } from '../utils/errorable';
@@ -73,7 +73,7 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
     const installResult = await installTo(bundlePick, name);
 
     if (succeeded(installResult)) {
-        await vscode.commands.executeCommand("duffle.refreshBundleExplorer");
+        await refreshBundleExplorer();
     }
 
     await showDuffleResult('install', (bundleId) => bundleId, installResult);

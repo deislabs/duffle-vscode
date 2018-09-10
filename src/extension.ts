@@ -8,9 +8,10 @@ import { RepoExplorer } from './explorer/repo/repo-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
-import { selectWorkspaceFolder, longRunning, showDuffleResult } from './utils/host';
+import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshBundleExplorer } from './utils/host';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
+import { succeeded } from './utils/errorable';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
@@ -23,6 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
         vscode.commands.registerCommand('duffle.bundleStatus', (node) => bundleStatus(node)),
         vscode.commands.registerCommand('duffle.bundleUpgrade', (node) => bundleUpgrade(node)),
+        vscode.commands.registerCommand('duffle.bundleUninstall', (node) => bundleUninstall(node)),
         vscode.commands.registerCommand('duffle.build', build),
         vscode.commands.registerCommand('duffle.install', install),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
@@ -77,4 +79,16 @@ async function bundleUpgrade(bundle: BundleRef): Promise<void> {
     );
 
     await showDuffleResult('upgrade', bundle.bundleName, upgradeResult);
+}
+
+async function bundleUninstall(bundle: BundleRef): Promise<void> {
+    const uninstallResult = await longRunning(`Duffle uninstalling ${bundle.bundleName}`,
+        () => duffle.uninstall(shell.shell, bundle.bundleName)
+    );
+
+    if (succeeded(uninstallResult)) {
+        await refreshBundleExplorer();
+    }
+
+    await showDuffleResult('uninstall', bundle.bundleName, uninstallResult);
 }

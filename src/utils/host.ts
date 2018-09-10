@@ -51,3 +51,7 @@ function trimPrefix(text: string, prefix: string): string {
     }
     return text;
 }
+
+export async function refreshBundleExplorer(): Promise<void> {
+    await vscode.commands.executeCommand("duffle.refreshBundleExplorer");
+}

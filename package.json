@@ -46,6 +46,11 @@
                 "category": "Duffle"
             },
             {
+                "command": "duffle.bundleUninstall",
+                "title": "Uninstall",
+                "category": "Duffle"
+            },
+            {
                 "command": "duffle.build",
                 "title": "Build Bundle",
                 "category": "Duffle"
@@ -105,6 +110,11 @@
                     "group": "1"
                 },
                 {
+                    "command": "duffle.bundleUninstall",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
+                    "group": "2"
+                },
+                {
                     "command": "duffle.install",
                     "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
                     "group": "1"
@@ -124,6 +134,11 @@
                 },
                 {
                     "command": "duffle.bundleStatus",
+                    "when": "view == duffle.bundleExplorer && viewItem = duffle.bundle",
+                    "group": "navigation"
+                },
+                {
+                    "command": "duffle.bundleUninstall",
                     "when": "view == duffle.bundleExplorer && viewItem = duffle.bundle",
                     "group": "navigation"
                 },
