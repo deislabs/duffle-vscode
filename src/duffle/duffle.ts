@@ -35,6 +35,10 @@ function andLog<T>(fn: (s: string) => T): (s: string) => T {
     };
 }
 
+export function home(sh: shell.Shell): string {
+    return process.env['DUFFLE_HOME'] || path.join(sh.home(), '.duffle');
+}
+
 export function list(sh: shell.Shell): Promise<Errorable<string[]>> {
     function parse(stdout: string): string[] {
         return stdout.split('\n')
