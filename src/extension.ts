@@ -61,7 +61,13 @@ async function createProject(): Promise<void> {
     const rootPath = folder.uri.fsPath;
     const createResult = await basicProjectCreator.create(rootPath);
 
-    if (!succeeded(createResult)) {
+    if (succeeded(createResult)) {
+        if (createResult.result) {
+            const fileToOpen = vscode.Uri.file(createResult.result);
+            const document = await vscode.workspace.openTextDocument(fileToOpen);
+            await vscode.window.showTextDocument(document);
+        }
+    } else {
         await vscode.window.showErrorMessage(`Unable to scaffold new Duffle project in ${rootPath}: ${createResult.error[0]}`);
     }
 }
