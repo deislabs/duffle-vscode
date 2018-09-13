@@ -13,6 +13,7 @@ import { publish } from './commands/publish';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
 import { succeeded } from './utils/errorable';
+import { basicProjectCreator } from './projects/basic';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
@@ -26,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.bundleStatus', (node) => bundleStatus(node)),
         vscode.commands.registerCommand('duffle.bundleUpgrade', (node) => bundleUpgrade(node)),
         vscode.commands.registerCommand('duffle.bundleUninstall', (node) => bundleUninstall(node)),
+        vscode.commands.registerCommand('duffle.createProject', createProject),
         vscode.commands.registerCommand('duffle.build', build),
         vscode.commands.registerCommand('duffle.publish', publish),
         vscode.commands.registerCommand('duffle.install', install),
@@ -50,6 +52,26 @@ function initDiagnostics() {
     vscode.workspace.onDidSaveTextDocument(lint);
     vscode.workspace.onDidCloseTextDocument((d) => duffleDiagnostics.delete(d.uri));
     vscode.workspace.textDocuments.forEach(lint);
+}
+
+async function createProject(): Promise<void> {
+    const folder = await selectWorkspaceFolder("Choose folder to create project in");
+    if (!folder) {
+        return;
+    }
+
+    const rootPath = folder.uri.fsPath;
+    const createResult = await basicProjectCreator.create(rootPath);
+
+    if (succeeded(createResult)) {
+        if (createResult.result) {
+            const fileToOpen = vscode.Uri.file(createResult.result);
+            const document = await vscode.workspace.openTextDocument(fileToOpen);
+            await vscode.window.showTextDocument(document);
+        }
+    } else {
+        await vscode.window.showErrorMessage(`Unable to scaffold new Duffle project in ${rootPath}: ${createResult.error[0]}`);
+    }
 }
 
 async function build(): Promise<void> {

@@ -17,6 +17,8 @@
         "onCommand:duffle.refreshBundleExplorer",
         "onCommand:duffle.bundleStatus",
         "onCommand:duffle.bundleUpgrade",
+        "onCommand:duffle.bundleUninstall",
+        "onCommand:duffle.createProject",
         "onCommand:duffle.build",
         "onCommand:duffle.publish",
         "onCommand:duffle.install",
@@ -49,6 +51,11 @@
             {
                 "command": "duffle.bundleUninstall",
                 "title": "Uninstall",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.createProject",
+                "title": "Create Project",
                 "category": "Duffle"
             },
             {
