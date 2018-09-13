@@ -9,6 +9,7 @@ import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
 import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshBundleExplorer } from './utils/host';
+import { publish } from './commands/publish';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
 import { succeeded } from './utils/errorable';
@@ -26,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.bundleUpgrade', (node) => bundleUpgrade(node)),
         vscode.commands.registerCommand('duffle.bundleUninstall', (node) => bundleUninstall(node)),
         vscode.commands.registerCommand('duffle.build', build),
+        vscode.commands.registerCommand('duffle.publish', publish),
         vscode.commands.registerCommand('duffle.install', install),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),

@@ -18,6 +18,7 @@
         "onCommand:duffle.bundleStatus",
         "onCommand:duffle.bundleUpgrade",
         "onCommand:duffle.build",
+        "onCommand:duffle.publish",
         "onCommand:duffle.install",
         "onCommand:duffle.refreshRepoExplorer",
         "onView:duffle.bundleExplorer",
@@ -53,6 +54,11 @@
             {
                 "command": "duffle.build",
                 "title": "Build Bundle",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.publish",
+                "title": "Publish Bundle to Repo",
                 "category": "Duffle"
             },
             {
@@ -123,6 +129,11 @@
             "explorer/context": [
                 {
                     "command": "duffle.install",
+                    "when": "resourceFilename == bundle.json",
+                    "group": "9"
+                },
+                {
+                    "command": "duffle.publish",
                     "when": "resourceFilename == bundle.json",
                     "group": "9"
                 }

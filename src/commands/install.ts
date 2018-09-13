@@ -1,26 +1,13 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-import { selectQuickPick, longRunning, showDuffleResult, refreshBundleExplorer } from '../utils/host';
+import { longRunning, showDuffleResult, refreshBundleExplorer } from '../utils/host';
 import * as duffle from '../duffle/duffle';
 import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
 import { succeeded, map, Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
-
-interface FolderBundleSelection {
-    readonly kind: 'folder';
-    readonly label: string;
-    readonly path: string;
-}
-
-interface RepoBundleSelection {
-    readonly kind: 'repo';
-    readonly label: string;
-    readonly bundle: string;
-}
-
-type BundleSelection = FolderBundleSelection | RepoBundleSelection;
+import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection } from '../utils/bundleselection';
 
 export async function install(target?: any): Promise<void> {
     if (!target) {
@@ -36,15 +23,8 @@ export async function install(target?: any): Promise<void> {
 }
 
 async function installPrompted(): Promise<void> {
-    const bundles = await vscode.workspace.findFiles('**/cnab/bundle.json');
-    if (!bundles || bundles.length === 0) {
-        await vscode.window.showErrorMessage("This command requires a bundle file in the current workspace.");
-        return;
-    }
+    const bundlePick = await promptBundle("Select the bundle to install");
 
-    const bundleQuickPicks = bundles.map(fileBundleSelection);
-
-    const bundlePick = await selectQuickPick(bundleQuickPicks, { placeHolder: "Select the bundle to install " });
     if (!bundlePick) {
         return;
     }
@@ -94,21 +74,4 @@ async function installTo(bundlePick: BundleSelection, name: string): Promise<Err
         return map(installResult, (_) => bundlePick.bundle);
     }
     return cantHappen(bundlePick);
-}
-
-function fileBundleSelection(bundleFile: vscode.Uri): BundleSelection {
-    const bundleDir = path.dirname(path.dirname(bundleFile.fsPath));
-    return {
-        kind: 'folder',
-        label: path.basename(bundleDir),
-        path: bundleDir
-    };
-}
-
-function repoBundleSelection(bundle: RepoBundle): BundleSelection {
-    return {
-        kind: 'repo',
-        label: bundle.name,
-        bundle: `${bundle.repository}/${bundle.name}`
-    };
 }
