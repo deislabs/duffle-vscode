@@ -86,5 +86,9 @@ function makeParameterTOML(name: string, definition: any): string[] {
             lines.push(`${numericProp} = ${definition[numericProp]}`);
         }
     }
+    if (definition.metadata && definition.metadata.description) {
+        lines.push(`[parameters.${name}.metadata]`);
+        lines.push(`description = "${definition.metadata.description}"`);
+    }
     return lines.map((l) => '    ' + l);
 }
