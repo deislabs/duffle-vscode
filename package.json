@@ -23,8 +23,10 @@
         "onCommand:duffle.publish",
         "onCommand:duffle.install",
         "onCommand:duffle.refreshRepoExplorer",
+        "onCommand:duffle.exposeParameter",
         "onView:duffle.bundleExplorer",
-        "onView:duffle.repoExplorer"
+        "onView:duffle.repoExplorer",
+        "onLanguage:json"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -81,6 +83,11 @@
                     "light": "images/light/refresh.svg",
                     "dark": "images/dark/refresh.svg"
                 }
+            },
+            {
+                "command": "duffle.exposeParameter",
+                "title": "Expose as CNAB Parameter",
+                "category": "Duffle"
             }
         ],
         "configuration": {
@@ -145,6 +152,13 @@
                     "group": "9"
                 }
             ],
+            "editor/context": [
+                {
+                    "command": "duffle.exposeParameter",
+                    "when": "editorLangId == json",
+                    "group": "9"
+                }
+            ],
             "commandPalette": [
                 {
                     "command": "duffle.refreshBundleExplorer",
@@ -163,6 +177,11 @@
                 {
                     "command": "duffle.refreshRepoExplorer",
                     "when": "view == duffle.repoExplorer"
+                },
+                {
+                    "command": "duffle.exposeParameter",
+                    "when": "editorLangId == json",
+                    "group": "9"
                 }
             ]
         },

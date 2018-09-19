@@ -14,6 +14,7 @@ import { install } from './commands/install';
 import { lintTo } from './lint/linters';
 import { succeeded } from './utils/errorable';
 import { basicProjectCreator } from './projects/basic';
+import { exposeParameter } from './commands/exposeparameter';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
@@ -32,6 +33,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.publish', publish),
         vscode.commands.registerCommand('duffle.install', install),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
+        vscode.commands.registerCommand('duffle.exposeParameter', exposeParameter),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.repoExplorer", repoExplorer),
         vscode.languages.registerCompletionItemProvider({ language: 'toml', pattern: '**/duffle.toml', scheme: 'file' }, duffleTOMLCompletionProvider)
