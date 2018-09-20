@@ -2,9 +2,11 @@ import * as vscode from 'vscode';
 
 import { ProjectCreator } from './creator';
 import { basicProjectCreator } from './basic';
+import { armProjectCreator } from './arm';
 
 const creators = [
-    basicProjectCreator
+    basicProjectCreator,
+    armProjectCreator
 ];
 
 export async function selectProjectCreator(prompt: string): Promise<ProjectCreator | undefined> {
