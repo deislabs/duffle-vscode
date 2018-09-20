@@ -6,6 +6,7 @@ import { fs } from '../utils/fs';
 import { substitutionValues, substitutePlaceholders } from './common';
 
 export const basicProjectCreator: ProjectCreator = {
+    name: "CNAB Hello World",
     create: create
 };
 

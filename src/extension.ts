@@ -13,7 +13,7 @@ import { publish } from './commands/publish';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
 import { succeeded } from './utils/errorable';
-import { basicProjectCreator } from './projects/basic';
+import { selectProjectCreator } from './projects/ui';
 import { exposeParameter } from './commands/exposeparameter';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
@@ -62,8 +62,13 @@ async function createProject(): Promise<void> {
         return;
     }
 
+    const creator = await selectProjectCreator("Choose template to create project from");
+    if (!creator) {
+        return;
+    }
+
     const rootPath = folder.uri.fsPath;
-    const createResult = await basicProjectCreator.create(rootPath);
+    const createResult = await creator.create(rootPath);
 
     if (succeeded(createResult)) {
         if (createResult.result) {
