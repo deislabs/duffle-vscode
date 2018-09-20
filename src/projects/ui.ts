@@ -3,10 +3,12 @@ import * as vscode from 'vscode';
 import { ProjectCreator } from './creator';
 import { basicProjectCreator } from './basic';
 import { armProjectCreator } from './arm';
+import { terraformProjectCreator } from './terraform';
 
 const creators = [
     basicProjectCreator,
-    armProjectCreator
+    armProjectCreator,
+    terraformProjectCreator
 ];
 
 export async function selectProjectCreator(prompt: string): Promise<ProjectCreator | undefined> {
