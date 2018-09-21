@@ -4,4 +4,4 @@ name = "{{!BUNDLE_NAME!}}"
     [components.cnab]
         name = "cnab"
         builder = "docker"
-        configuration = { registry = "microsoft" }
+        configuration = { registry = "{{!REGISTRY!}}" }
