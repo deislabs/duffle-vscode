@@ -223,8 +223,10 @@
     "dependencies": {
         "@types/lodash": "^4.14.113",
         "@types/shelljs": "^0.8.0",
+        "@types/tmp": "0.0.33",
         "lodash": "^4.17.10",
-        "shelljs": "^0.7.7"
+        "shelljs": "^0.7.7",
+        "tmp": "^0.0.33"
     },
     "devDependencies": {
         "typescript": "^2.6.1",
