@@ -75,7 +75,7 @@ async function installTo(bundlePick: BundleSelection, name: string, params: { [k
         return map(installResult, (_) => bundlePath);
     } else if (bundlePick.kind === 'repo') {
         const installResult = await longRunning(`Duffle installing ${bundlePick.bundle}`,
-            () => duffle.installBundle(shell.shell, bundlePick.label /* because bundlePick.bundle doesn't work */, name, params)
+            () => duffle.installBundle(shell.shell, bundlePick.bundle, name, params)
         );
         return map(installResult, (_) => bundlePick.bundle);
     }
