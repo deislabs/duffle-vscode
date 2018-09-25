@@ -57,6 +57,15 @@ export function listRepos(sh: shell.Shell): Promise<Errorable<string[]>> {
     return invokeObj(sh, 'repo list', '', {}, parse);
 }
 
+export function listCredentialSets(sh: shell.Shell): Promise<Errorable<string[]>> {
+    function parse(stdout: string): string[] {
+        return stdout.split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0);
+    }
+    return invokeObj(sh, 'credentials list', '', {}, parse);
+}
+
 export function search(sh: shell.Shell): Promise<Errorable<RepoBundle[]>> {
     function parse(stdout: string): RepoBundle[] {
         const lines = stdout.split('\n')

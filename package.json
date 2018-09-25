@@ -23,9 +23,11 @@
         "onCommand:duffle.publish",
         "onCommand:duffle.install",
         "onCommand:duffle.refreshRepoExplorer",
+        "onCommand:duffle.refreshCredentialExplorer",
         "onCommand:duffle.exposeParameter",
         "onView:duffle.bundleExplorer",
         "onView:duffle.repoExplorer",
+        "onView:duffle.credentialExplorer",
         "onLanguage:json"
     ],
     "main": "./out/extension",
@@ -85,6 +87,15 @@
                 }
             },
             {
+                "command": "duffle.refreshCredentialExplorer",
+                "title": "Refresh Credential Explorer",
+                "category": "Duffle",
+                "icon": {
+                    "light": "images/light/refresh.svg",
+                    "dark": "images/dark/refresh.svg"
+                }
+            },
+            {
                 "command": "duffle.exposeParameter",
                 "title": "Expose as CNAB Parameter",
                 "category": "Duffle"
@@ -115,6 +126,11 @@
                 {
                     "command": "duffle.refreshRepoExplorer",
                     "when": "view == duffle.repoExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "duffle.refreshCredentialExplorer",
+                    "when": "view == duffle.credentialExplorer",
                     "group": "navigation"
                 }
             ],
@@ -179,6 +195,10 @@
                     "when": "view == duffle.repoExplorer"
                 },
                 {
+                    "command": "duffle.refreshCredentialExplorer",
+                    "when": "view == duffle.credentialExplorer"
+                },
+                {
                     "command": "duffle.exposeParameter",
                     "when": "editorLangId == json",
                     "group": "9"
@@ -209,6 +229,10 @@
                 {
                     "id": "duffle.repoExplorer",
                     "name": "Repositories"
+                },
+                {
+                    "id": "duffle.credentialExplorer",
+                    "name": "Credentials"
                 }
             ]
         }
