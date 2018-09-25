@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 export const END_DIALOG_FN = "endDialog()";
 
-export function dialog(tabTitle: string, htmlBody: string, formId: string): Promise<any> {
+export function dialog(tabTitle: string, htmlBody: string, formId: string): Promise<{ [key: string]: string }> {
     return new Promise<any>((resolve, reject) => {
         const postbackScript = `<script>
         function ${END_DIALOG_FN} {

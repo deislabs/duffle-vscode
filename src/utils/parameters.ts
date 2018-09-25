@@ -8,7 +8,7 @@ import { cantHappen } from './never';
 
 interface ParameterValues {
     readonly cancelled: false;
-    readonly values: any;
+    readonly values: { [key: string]: string };
 }
 
 interface Cancelled {
@@ -56,7 +56,7 @@ function parameterEntryRow(p: ParameterDefinition): string {
 }
 
 function inputWidget(p: ParameterDefinition): string {
-    if (p.type === "boolean") {
+    if (p.type === "bool") {
         return `<select name="${p.name}"><option>True</option><option>False</option></select>`;
     }
     if (p.allowedValues) {

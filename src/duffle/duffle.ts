@@ -7,6 +7,7 @@ import { Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { RepoBundle } from './duffle.objectmodel';
 import { sharedTerminal } from './sharedterminal';
+import * as pairs from '../utils/pairs';
 
 const logChannel = vscode.window.createOutputChannel("Duffle");
 
@@ -97,16 +98,19 @@ export async function build(sh: shell.Shell, folderPath: string): Promise<Errora
     return await invokeObj(sh, 'build', '.', { cwd: folderPath }, (s) => null);
 }
 
-export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string, paramsFile: string | undefined): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'install', `${name} -f "${bundleFilePath}" ${paramsArg(paramsFile)}`, {}, (s) => null);
+export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string, params: { [key: string]: string }): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'install', `${name} -f "${bundleFilePath}" ${paramsArgs(params)}`, {}, (s) => null);
 }
 
-export async function installBundle(sh: shell.Shell, bundleName: string, name: string, paramsFile: string | undefined): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'install', `${name} ${bundleName} ${paramsArg(paramsFile)}`, {}, (s) => null);
+export async function installBundle(sh: shell.Shell, bundleName: string, name: string, params: { [key: string]: string }): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'install', `${name} ${bundleName} ${paramsArgs(params)}`, {}, (s) => null);
 }
 
-function paramsArg(file: string | undefined): string {
-    return file ? `-p "${file}"` : '';
+function paramsArgs(parameters: { [key: string]: string }): string {
+    return pairs.fromStringMap(parameters)
+        .filter((p) => !!p.value)
+        .map((p) => `--set ${p.key}=${shell.safeValue(p.value)}`)
+        .join(' ');
 }
 
 function fromHeaderedTable<T>(lines: string[]): T[] {
