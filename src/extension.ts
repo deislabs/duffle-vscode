@@ -2,14 +2,14 @@
 
 import * as vscode from 'vscode';
 
-import { BundleRef } from './duffle/duffle.objectmodel';
+import { BundleRef, CredentialSetRef } from './duffle/duffle.objectmodel';
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { RepoExplorer } from './explorer/repo/repo-explorer';
 import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
-import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshBundleExplorer } from './utils/host';
+import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshBundleExplorer, refreshCredentialExplorer, confirm } from './utils/host';
 import { publish } from './commands/publish';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
@@ -36,6 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.install', install),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
         vscode.commands.registerCommand('duffle.refreshCredentialExplorer', () => credentialExplorer.refresh()),
+        vscode.commands.registerCommand('duffle.credentialsetDelete', (node) => credentialsetDelete(node)),
         vscode.commands.registerCommand('duffle.exposeParameter', exposeParameter),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.repoExplorer", repoExplorer),
@@ -126,4 +127,21 @@ async function bundleUninstall(bundle: BundleRef): Promise<void> {
     }
 
     await showDuffleResult('uninstall', bundle.bundleName, uninstallResult);
+}
+
+async function credentialsetDelete(credentialSet: CredentialSetRef): Promise<void> {
+    const confirmed = await confirm(`Deleting ${credentialSet.credentialSetName} cannot be undone.`, 'Delete');
+    if (!confirmed) {
+        return;
+    }
+
+    const deleteResult = await longRunning(`Duffle deleting credential set ${credentialSet.credentialSetName}`,
+        () => duffle.deleteCredentialSet(shell.shell, credentialSet.credentialSetName)
+    );
+
+    if (succeeded(deleteResult)) {
+        await refreshCredentialExplorer();
+    }
+
+    await showDuffleResult('delete credential set', credentialSet.credentialSetName, deleteResult);
 }

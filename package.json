@@ -24,6 +24,7 @@
         "onCommand:duffle.install",
         "onCommand:duffle.refreshRepoExplorer",
         "onCommand:duffle.refreshCredentialExplorer",
+        "onCommand:duffle.credentialsetDelete",
         "onCommand:duffle.exposeParameter",
         "onView:duffle.bundleExplorer",
         "onView:duffle.repoExplorer",
@@ -96,6 +97,11 @@
                 }
             },
             {
+                "command": "duffle.credentialsetDelete",
+                "title": "Delete Credential Set",
+                "category": "Duffle"
+            },
+            {
                 "command": "duffle.exposeParameter",
                 "title": "Expose as CNAB Parameter",
                 "category": "Duffle"
@@ -154,6 +160,11 @@
                     "command": "duffle.install",
                     "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
                     "group": "1"
+                },
+                {
+                    "command": "duffle.credentialsetDelete",
+                    "when": "view == duffle.credentialExplorer && viewItem == duffle.credentialset",
+                    "group": "1"
                 }
             ],
             "explorer/context": [
@@ -197,6 +208,11 @@
                 {
                     "command": "duffle.refreshCredentialExplorer",
                     "when": "view == duffle.credentialExplorer"
+                },
+                {
+                    "command": "duffle.credentialsetDelete",
+                    "when": "view == duffle.credentialExplorer && viewItem = duffle.credentialset",
+                    "group": "navigation"
                 },
                 {
                     "command": "duffle.exposeParameter",

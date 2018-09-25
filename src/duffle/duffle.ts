@@ -128,3 +128,7 @@ function asObj<T>(labels: string[], columns: string[]): T {
     }
     return o;
 }
+
+export async function deleteCredentialSet(sh: shell.Shell, credentialSetName: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'credential remove', credentialSetName, {}, (s) => null);
+}
