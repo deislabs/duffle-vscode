@@ -9,6 +9,7 @@ import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
 import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection } from '../utils/bundleselection';
 import { promptForParameters } from '../utils/parameters';
+import { promptForCredentials } from '../utils/credentials';
 
 export async function install(target?: any): Promise<void> {
     if (!target) {
@@ -51,12 +52,17 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
         return;
     }
 
+    const credentialSet = await promptForCredentials(bundlePick, shell.shell, 'Credential set to install bundle with');
+    if (credentialSet.cancelled) {
+        return;
+    }
+
     const parameterValues = await promptForParameters(bundlePick, 'Install', 'Enter installation parameters');
     if (parameterValues.cancelled) {
         return;
     }
 
-    const installResult = await installTo(bundlePick, name, parameterValues.values);
+    const installResult = await installTo(bundlePick, name, parameterValues.value, credentialSet.value);
 
     if (succeeded(installResult)) {
         await refreshBundleExplorer();
@@ -65,17 +71,17 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
     await showDuffleResult('install', (bundleId) => bundleId, installResult);
 }
 
-async function installTo(bundlePick: BundleSelection, name: string, params: { [key: string]: string }): Promise<Errorable<string>> {
+async function installTo(bundlePick: BundleSelection, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<string>> {
     if (bundlePick.kind === 'folder') {
         const folderPath = bundlePick.path;
         const bundlePath = path.join(folderPath, "cnab", "bundle.json");
         const installResult = await longRunning(`Duffle installing ${bundlePath}`,
-            () => duffle.installFile(shell.shell, bundlePath, name, params)
+            () => duffle.installFile(shell.shell, bundlePath, name, params, credentialSet)
         );
         return map(installResult, (_) => bundlePath);
     } else if (bundlePick.kind === 'repo') {
         const installResult = await longRunning(`Duffle installing ${bundlePick.bundle}`,
-            () => duffle.installBundle(shell.shell, bundlePick.bundle, name, params)
+            () => duffle.installBundle(shell.shell, bundlePick.bundle, name, params, credentialSet)
         );
         return map(installResult, (_) => bundlePick.bundle);
     }

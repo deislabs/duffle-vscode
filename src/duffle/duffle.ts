@@ -98,12 +98,12 @@ export async function build(sh: shell.Shell, folderPath: string): Promise<Errora
     return await invokeObj(sh, 'build', '.', { cwd: folderPath }, (s) => null);
 }
 
-export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string, params: { [key: string]: string }): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'install', `${name} -f "${bundleFilePath}" ${paramsArgs(params)}`, {}, (s) => null);
+export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'install', `${name} -f "${bundleFilePath}" ${paramsArgs(params)} ${credentialArg(credentialSet)}`, {}, (s) => null);
 }
 
-export async function installBundle(sh: shell.Shell, bundleName: string, name: string, params: { [key: string]: string }): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'install', `${name} ${bundleName} ${paramsArgs(params)}`, {}, (s) => null);
+export async function installBundle(sh: shell.Shell, bundleName: string, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'install', `${name} ${bundleName} ${paramsArgs(params)} ${credentialArg(credentialSet)}`, {}, (s) => null);
 }
 
 function paramsArgs(parameters: { [key: string]: string }): string {
@@ -111,6 +111,13 @@ function paramsArgs(parameters: { [key: string]: string }): string {
         .filter((p) => !!p.value)
         .map((p) => `--set ${p.key}=${shell.safeValue(p.value)}`)
         .join(' ');
+}
+
+function credentialArg(credentialSet: string | undefined): string {
+    if (credentialSet) {
+        return `-c ${credentialSet}`;
+    }
+    return '';
 }
 
 function fromHeaderedTable<T>(lines: string[]): T[] {
