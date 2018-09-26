@@ -4,6 +4,7 @@ import * as duffle from '../../duffle/duffle';
 import { succeeded } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
 import { CredentialSetRef } from '../../duffle/duffle.objectmodel';
+import * as dufflepaths from '../../duffle/duffle.paths';
 
 export class CredentialExplorer implements vscode.TreeDataProvider<CredentialExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -50,7 +51,17 @@ class CredentialSetNode implements CredentialExplorerNode, CredentialSetRef {
     getTreeItem(): vscode.TreeItem {
         const treeItem = new vscode.TreeItem(this.credentialSetName, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = "duffle.credentialset";
+        treeItem.command = {
+            title: "Edit Credential Set",
+            command: "vscode.open",
+            arguments: [this.uri()]
+        };
         return treeItem;
+    }
+
+    private uri(): vscode.Uri {
+        const filePath = dufflepaths.credentialSetPath(this.credentialSetName);
+        return vscode.Uri.file(filePath);
     }
 }
 
