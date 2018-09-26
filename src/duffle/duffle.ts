@@ -132,3 +132,11 @@ function asObj<T>(labels: string[], columns: string[]): T {
 export async function deleteCredentialSet(sh: shell.Shell, credentialSetName: string): Promise<Errorable<null>> {
     return await invokeObj(sh, 'credential remove', credentialSetName, {}, (s) => null);
 }
+
+export async function generateCredentialsForFile(sh: shell.Shell, bundleFilePath: string, name: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'credentials generate', `${name} -f "${bundleFilePath}"`, {}, (s) => null);
+}
+
+export async function generateCredentialsForBundle(sh: shell.Shell, bundleName: string, name: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'credentials generate', `${name} ${bundleName}`, {}, (s) => null);
+}

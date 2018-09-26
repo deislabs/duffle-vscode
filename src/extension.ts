@@ -16,6 +16,7 @@ import { lintTo } from './lint/linters';
 import { succeeded } from './utils/errorable';
 import { selectProjectCreator } from './projects/ui';
 import { exposeParameter } from './commands/exposeparameter';
+import { generateCredentials } from './commands/generatecredentials';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
@@ -34,6 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.build', build),
         vscode.commands.registerCommand('duffle.publish', publish),
         vscode.commands.registerCommand('duffle.install', install),
+        vscode.commands.registerCommand('duffle.generateCredentials', generateCredentials),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
         vscode.commands.registerCommand('duffle.refreshCredentialExplorer', () => credentialExplorer.refresh()),
         vscode.commands.registerCommand('duffle.credentialsetDelete', (node) => credentialsetDelete(node)),

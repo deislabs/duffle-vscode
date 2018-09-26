@@ -22,6 +22,7 @@
         "onCommand:duffle.build",
         "onCommand:duffle.publish",
         "onCommand:duffle.install",
+        "onCommand:duffle.generateCredentials",
         "onCommand:duffle.refreshRepoExplorer",
         "onCommand:duffle.refreshCredentialExplorer",
         "onCommand:duffle.credentialsetDelete",
@@ -76,6 +77,11 @@
             {
                 "command": "duffle.install",
                 "title": "Install Bundle",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.generateCredentials",
+                "title": "Generate Bundle Credential Set",
                 "category": "Duffle"
             },
             {
@@ -162,6 +168,11 @@
                     "group": "1"
                 },
                 {
+                    "command": "duffle.generateCredentials",
+                    "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
+                    "group": "1"
+                },
+                {
                     "command": "duffle.credentialsetDelete",
                     "when": "view == duffle.credentialExplorer && viewItem == duffle.credentialset",
                     "group": "1"
@@ -170,6 +181,11 @@
             "explorer/context": [
                 {
                     "command": "duffle.install",
+                    "when": "resourceFilename == bundle.json",
+                    "group": "9"
+                },
+                {
+                    "command": "duffle.generateCredentials",
                     "when": "resourceFilename == bundle.json",
                     "group": "9"
                 },
