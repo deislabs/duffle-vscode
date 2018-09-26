@@ -2,25 +2,28 @@
 
 import * as vscode from 'vscode';
 
-import { BundleRef } from './duffle/duffle.objectmodel';
+import { BundleRef, CredentialSetRef } from './duffle/duffle.objectmodel';
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { RepoExplorer } from './explorer/repo/repo-explorer';
+import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
-import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshBundleExplorer } from './utils/host';
+import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshBundleExplorer, refreshCredentialExplorer, confirm } from './utils/host';
 import { publish } from './commands/publish';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
 import { succeeded } from './utils/errorable';
 import { selectProjectCreator } from './projects/ui';
 import { exposeParameter } from './commands/exposeparameter';
+import { generateCredentials } from './commands/generatecredentials';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
 export function activate(context: vscode.ExtensionContext) {
     const bundleExplorer = new BundleExplorer(shell.shell);
     const repoExplorer = new RepoExplorer(shell.shell);
+    const credentialExplorer = new CredentialExplorer(shell.shell);
     const duffleTOMLCompletionProvider = new DuffleTOMLCompletionProvider();
 
     const subscriptions = [
@@ -32,10 +35,15 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.build', build),
         vscode.commands.registerCommand('duffle.publish', publish),
         vscode.commands.registerCommand('duffle.install', install),
+        vscode.commands.registerCommand('duffle.generateCredentials', generateCredentials),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
+        vscode.commands.registerCommand('duffle.refreshCredentialExplorer', () => credentialExplorer.refresh()),
+        vscode.commands.registerCommand('duffle.credentialsetAdd', credentialSetAdd),
+        vscode.commands.registerCommand('duffle.credentialsetDelete', (node) => credentialsetDelete(node)),
         vscode.commands.registerCommand('duffle.exposeParameter', exposeParameter),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.repoExplorer", repoExplorer),
+        vscode.window.registerTreeDataProvider("duffle.credentialExplorer", credentialExplorer),
         vscode.languages.registerCompletionItemProvider({ language: 'toml', pattern: '**/duffle.toml', scheme: 'file' }, duffleTOMLCompletionProvider)
     ];
 
@@ -122,4 +130,59 @@ async function bundleUninstall(bundle: BundleRef): Promise<void> {
     }
 
     await showDuffleResult('uninstall', bundle.bundleName, uninstallResult);
+}
+
+async function credentialsetDelete(credentialSet: CredentialSetRef): Promise<void> {
+    const confirmed = await confirm(`Deleting ${credentialSet.credentialSetName} cannot be undone.`, 'Delete');
+    if (!confirmed) {
+        return;
+    }
+
+    const deleteResult = await longRunning(`Duffle deleting credential set ${credentialSet.credentialSetName}`,
+        () => duffle.deleteCredentialSet(shell.shell, credentialSet.credentialSetName)
+    );
+
+    if (succeeded(deleteResult)) {
+        await refreshCredentialExplorer();
+    }
+
+    await showDuffleResult('credential remove', credentialSet.credentialSetName, deleteResult);
+}
+
+async function credentialSetAdd(): Promise<void> {
+    const uris = await vscode.window.showOpenDialog({
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: true,
+        filters: {
+            'YAML files': ['yaml', 'yml'],
+            'All files': ['*']
+        },
+        openLabel: 'Add Credential Set'
+    });
+
+    if (!uris || uris.length === 0) {
+        return;
+    }
+
+    if (!uris.every((uri) => uri.scheme === 'file')) {
+        await vscode.window.showErrorMessage('Credential sets to be added must be on the filesystem');
+        return;
+    }
+
+    const files = uris.map((uri) => uri.fsPath);
+
+    const description = files.length === 1 ?
+        files[0] :
+        `${files[0]} and ${files.length - 1} other(s)`;
+
+    const addResult = await longRunning(`Duffle adding credential set ${description}`,
+        () => duffle.addCredentialSets(shell.shell, files)
+    );
+
+    if (succeeded(addResult)) {
+        await refreshCredentialExplorer();
+    }
+
+    await showDuffleResult('credential add', description, addResult);
 }

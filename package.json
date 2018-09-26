@@ -22,10 +22,15 @@
         "onCommand:duffle.build",
         "onCommand:duffle.publish",
         "onCommand:duffle.install",
+        "onCommand:duffle.generateCredentials",
         "onCommand:duffle.refreshRepoExplorer",
+        "onCommand:duffle.refreshCredentialExplorer",
+        "onCommand:duffle.credentialsetAdd",
+        "onCommand:duffle.credentialsetDelete",
         "onCommand:duffle.exposeParameter",
         "onView:duffle.bundleExplorer",
         "onView:duffle.repoExplorer",
+        "onView:duffle.credentialExplorer",
         "onLanguage:json"
     ],
     "main": "./out/extension",
@@ -76,6 +81,11 @@
                 "category": "Duffle"
             },
             {
+                "command": "duffle.generateCredentials",
+                "title": "Generate Bundle Credential Set",
+                "category": "Duffle"
+            },
+            {
                 "command": "duffle.refreshRepoExplorer",
                 "title": "Refresh Repo Explorer",
                 "category": "Duffle",
@@ -83,6 +93,29 @@
                     "light": "images/light/refresh.svg",
                     "dark": "images/dark/refresh.svg"
                 }
+            },
+            {
+                "command": "duffle.refreshCredentialExplorer",
+                "title": "Refresh Credential Explorer",
+                "category": "Duffle",
+                "icon": {
+                    "light": "images/light/refresh.svg",
+                    "dark": "images/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "duffle.credentialsetAdd",
+                "title": "Add Credential Set",
+                "category": "Duffle",
+                "icon": {
+                    "light": "images/light/add.svg",
+                    "dark": "images/dark/add.svg"
+                }
+            },
+            {
+                "command": "duffle.credentialsetDelete",
+                "title": "Delete Credential Set",
+                "category": "Duffle"
             },
             {
                 "command": "duffle.exposeParameter",
@@ -116,6 +149,16 @@
                     "command": "duffle.refreshRepoExplorer",
                     "when": "view == duffle.repoExplorer",
                     "group": "navigation"
+                },
+                {
+                    "command": "duffle.refreshCredentialExplorer",
+                    "when": "view == duffle.credentialExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "duffle.credentialsetAdd",
+                    "when": "view == duffle.credentialExplorer",
+                    "group": "navigation"
                 }
             ],
             "view/item/context": [
@@ -138,11 +181,26 @@
                     "command": "duffle.install",
                     "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
                     "group": "1"
+                },
+                {
+                    "command": "duffle.generateCredentials",
+                    "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
+                    "group": "1"
+                },
+                {
+                    "command": "duffle.credentialsetDelete",
+                    "when": "view == duffle.credentialExplorer && viewItem == duffle.credentialset",
+                    "group": "1"
                 }
             ],
             "explorer/context": [
                 {
                     "command": "duffle.install",
+                    "when": "resourceFilename == bundle.json",
+                    "group": "9"
+                },
+                {
+                    "command": "duffle.generateCredentials",
                     "when": "resourceFilename == bundle.json",
                     "group": "9"
                 },
@@ -179,6 +237,19 @@
                     "when": "view == duffle.repoExplorer"
                 },
                 {
+                    "command": "duffle.refreshCredentialExplorer",
+                    "when": "view == duffle.credentialExplorer"
+                },
+                {
+                    "command": "duffle.credentialsetAdd",
+                    "when": "view == duffle.credentialExplorer"
+                },
+                {
+                    "command": "duffle.credentialsetDelete",
+                    "when": "view == duffle.credentialExplorer && viewItem = duffle.credentialset",
+                    "group": "navigation"
+                },
+                {
                     "command": "duffle.exposeParameter",
                     "when": "editorLangId == json",
                     "group": "9"
@@ -209,6 +280,10 @@
                 {
                     "id": "duffle.repoExplorer",
                     "name": "Repositories"
+                },
+                {
+                    "id": "duffle.credentialExplorer",
+                    "name": "Credentials"
                 }
             ]
         }

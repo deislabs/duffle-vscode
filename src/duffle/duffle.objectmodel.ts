@@ -19,3 +19,7 @@ export interface ParameterDefinition {
     readonly defaultValue?: number | string | boolean;
     readonly metadata?: { description?: string };
 }
+
+export interface CredentialSetRef {
+    readonly credentialSetName: string;
+}

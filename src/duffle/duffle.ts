@@ -57,6 +57,15 @@ export function listRepos(sh: shell.Shell): Promise<Errorable<string[]>> {
     return invokeObj(sh, 'repo list', '', {}, parse);
 }
 
+export function listCredentialSets(sh: shell.Shell): Promise<Errorable<string[]>> {
+    function parse(stdout: string): string[] {
+        return stdout.split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0);
+    }
+    return invokeObj(sh, 'credentials list', '', {}, parse);
+}
+
 export function search(sh: shell.Shell): Promise<Errorable<RepoBundle[]>> {
     function parse(stdout: string): RepoBundle[] {
         const lines = stdout.split('\n')
@@ -118,4 +127,21 @@ function asObj<T>(labels: string[], columns: string[]): T {
         o[labels[index].toLowerCase()] = columns[index];
     }
     return o;
+}
+
+export async function addCredentialSets(sh: shell.Shell, files: string[]): Promise<Errorable<null>> {
+    const filesArg = files.map((f) => `"${f}"`).join(' ');
+    return await invokeObj(sh, 'credential add', filesArg, {}, (s) => null);
+}
+
+export async function deleteCredentialSet(sh: shell.Shell, credentialSetName: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'credential remove', credentialSetName, {}, (s) => null);
+}
+
+export async function generateCredentialsForFile(sh: shell.Shell, bundleFilePath: string, name: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'credentials generate', `${name} -f "${bundleFilePath}"`, {}, (s) => null);
+}
+
+export async function generateCredentialsForBundle(sh: shell.Shell, bundleName: string, name: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'credentials generate', `${name} ${bundleName}`, {}, (s) => null);
 }

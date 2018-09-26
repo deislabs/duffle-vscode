@@ -52,10 +52,19 @@ function trimPrefix(text: string, prefix: string): string {
     return text;
 }
 
+export async function confirm(text: string, confirmLabel: string): Promise<boolean> {
+    const choice = await vscode.window.showWarningMessage(text, confirmLabel, 'Cancel');
+    return choice === confirmLabel;
+}
+
 export async function refreshBundleExplorer(): Promise<void> {
     await vscode.commands.executeCommand("duffle.refreshBundleExplorer");
 }
 
 export async function refreshRepoExplorer(): Promise<void> {
     await vscode.commands.executeCommand("duffle.refreshRepoExplorer");
+}
+
+export async function refreshCredentialExplorer(): Promise<void> {
+    await vscode.commands.executeCommand("duffle.refreshCredentialExplorer");
 }
