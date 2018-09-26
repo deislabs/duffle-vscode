@@ -38,6 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.generateCredentials', generateCredentials),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
         vscode.commands.registerCommand('duffle.refreshCredentialExplorer', () => credentialExplorer.refresh()),
+        vscode.commands.registerCommand('duffle.credentialsetAdd', credentialSetAdd),
         vscode.commands.registerCommand('duffle.credentialsetDelete', (node) => credentialsetDelete(node)),
         vscode.commands.registerCommand('duffle.exposeParameter', exposeParameter),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
@@ -145,5 +146,43 @@ async function credentialsetDelete(credentialSet: CredentialSetRef): Promise<voi
         await refreshCredentialExplorer();
     }
 
-    await showDuffleResult('delete credential set', credentialSet.credentialSetName, deleteResult);
+    await showDuffleResult('credential remove', credentialSet.credentialSetName, deleteResult);
+}
+
+async function credentialSetAdd(): Promise<void> {
+    const uris = await vscode.window.showOpenDialog({
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: true,
+        filters: {
+            'YAML files': ['yaml', 'yml'],
+            'All files': ['*']
+        },
+        openLabel: 'Add Credential Set'
+    });
+
+    if (!uris || uris.length === 0) {
+        return;
+    }
+
+    if (!uris.every((uri) => uri.scheme === 'file')) {
+        await vscode.window.showErrorMessage('Credential sets to be added must be on the filesystem');
+        return;
+    }
+
+    const files = uris.map((uri) => uri.fsPath);
+
+    const description = files.length === 1 ?
+        files[0] :
+        `${files[0]} and ${files.length - 1} other(s)`;
+
+    const addResult = await longRunning(`Duffle adding credential set ${description}`,
+        () => duffle.addCredentialSets(shell.shell, files)
+    );
+
+    if (succeeded(addResult)) {
+        await refreshCredentialExplorer();
+    }
+
+    await showDuffleResult('credential add', description, addResult);
 }

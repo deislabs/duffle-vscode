@@ -129,6 +129,11 @@ function asObj<T>(labels: string[], columns: string[]): T {
     return o;
 }
 
+export async function addCredentialSets(sh: shell.Shell, files: string[]): Promise<Errorable<null>> {
+    const filesArg = files.map((f) => `"${f}"`).join(' ');
+    return await invokeObj(sh, 'credential add', filesArg, {}, (s) => null);
+}
+
 export async function deleteCredentialSet(sh: shell.Shell, credentialSetName: string): Promise<Errorable<null>> {
     return await invokeObj(sh, 'credential remove', credentialSetName, {}, (s) => null);
 }
