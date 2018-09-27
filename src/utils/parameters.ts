@@ -1,26 +1,15 @@
-import * as path from 'path';
-
 import { fs } from './fs';
 import { ParameterDefinition } from "../duffle/duffle.objectmodel";
-import { BundleSelection } from "./bundleselection";
+import { BundleSelection, bundleJSONPath } from "./bundleselection";
 import { END_DIALOG_FN, dialog } from "./dialog";
-import { cantHappen } from './never';
+import { Cancellable } from './cancellable';
 
-interface ParameterValues {
-    readonly cancelled: false;
-    readonly values: any;
-}
-
-interface Cancelled {
-    readonly cancelled: true;
-}
-
-export type ParameterValuesPromptResult = ParameterValues | Cancelled;
+export type ParameterValuesPromptResult = Cancellable<{ [key: string]: string }>;
 
 export async function promptForParameters(bundlePick: BundleSelection, actionName: string, prompt: string): Promise<ParameterValuesPromptResult> {
     const definitions = await bundleParameters(bundlePick);
     if (!definitions || definitions.length === 0) {
-        return { cancelled: false, values: {} };
+        return { cancelled: false, value: {} };
     }
 
     const parameterFormId = 'pvform';
@@ -36,7 +25,7 @@ export async function promptForParameters(bundlePick: BundleSelection, actionNam
         return { cancelled: true };
     }
 
-    return { cancelled: false, values: parameterValues };
+    return { cancelled: false, value: parameterValues };
 }
 
 function parameterEntryTable(ps: ParameterDefinition[]): string {
@@ -56,7 +45,7 @@ function parameterEntryRow(p: ParameterDefinition): string {
 }
 
 function inputWidget(p: ParameterDefinition): string {
-    if (p.type === "boolean") {
+    if (p.type === "bool") {
         return `<select name="${p.name}"><option>True</option><option>False</option></select>`;
     }
     if (p.allowedValues) {
@@ -67,20 +56,9 @@ function inputWidget(p: ParameterDefinition): string {
     return `<input name="${p.name}" type="text" value="${defval}" />`;
 }
 
-function localPath(bundleRef: string): string {
-    const bits = bundleRef.split('/');
-    const last = bits.pop()!;
-    bits.push('bundles', last);
-    return bits.join('/');
-}
-
 async function bundleParameters(bundlePick: BundleSelection): Promise<ParameterDefinition[]> {
-    if (bundlePick.kind === "folder") {
-        return await parseParametersFromJSONFile(path.join(bundlePick.path, "bundle.json"));
-    } else if (bundlePick.kind === "repo") {
-        return await parseParametersFromJSONFile(path.join(process.env["USERPROFILE"]!, ".duffle", "repositories", localPath(bundlePick.bundle) + '.json'));
-    }
-    return cantHappen(bundlePick);
+    const jsonPath = bundleJSONPath(bundlePick);
+    return await parseParametersFromJSONFile(jsonPath);
 }
 
 async function parseParametersFromJSONFile(jsonFile: string): Promise<ParameterDefinition[]> {

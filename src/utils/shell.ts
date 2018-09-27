@@ -179,3 +179,10 @@ function pathVariableName(env: any): string {
 function pathEntrySeparator() {
     return isWindows() ? ';' : ':';
 }
+
+export function safeValue(s: string): string {
+    if (s.indexOf(' ') >= 0) {
+        return `"${s}"`;  // TODO: confirm quoting style on Mac/Linux
+    }
+    return s;
+}
