@@ -3,6 +3,7 @@ import * as path from 'path';
 
 import { selectQuickPick } from './host';
 import { RepoBundle } from '../duffle/duffle.objectmodel';
+import * as dufflepaths from '../duffle/duffle.paths';
 import { cantHappen } from './never';
 
 export interface FolderBundleSelection {
@@ -57,15 +58,7 @@ export function bundleJSONPath(bundlePick: BundleSelection) {
     if (bundlePick.kind === "folder") {
         return path.join(bundlePick.path, "bundle.json");
     } else if (bundlePick.kind === "repo") {
-        // TODO: replace with dufflepaths once merged
-        return path.join(process.env["USERPROFILE"]!, ".duffle", "repositories", localPath(bundlePick.bundle) + '.json');
+        return dufflepaths.repoBundlePath(bundlePick.bundle);
     }
     return cantHappen(bundlePick);
-}
-
-function localPath(bundleRef: string): string {
-    const bits = bundleRef.split('/');
-    const last = bits.pop()!;
-    bits.push('bundles', last);
-    return bits.join('/');
 }
