@@ -297,9 +297,13 @@
     },
     "dependencies": {
         "@types/lodash": "^4.14.113",
+        "@types/request": "^2.47.1",
+        "@types/request-promise-native": "^1.0.15",
         "@types/shelljs": "^0.8.0",
         "@types/tmp": "0.0.33",
         "lodash": "^4.17.10",
+        "request": "^2.88.0",
+        "request-promise-native": "^1.0.5",
         "shelljs": "^0.7.7",
         "tmp": "^0.0.33"
     },

@@ -1,6 +1,5 @@
-import { fs } from './fs';
 import { ParameterDefinition } from "../duffle/duffle.objectmodel";
-import { BundleSelection, bundleJSONPath } from "./bundleselection";
+import { BundleSelection, bundleJSON } from "./bundleselection";
 import { END_DIALOG_FN, dialog } from "./dialog";
 import { Cancellable } from './cancellable';
 
@@ -57,12 +56,11 @@ function inputWidget(p: ParameterDefinition): string {
 }
 
 async function bundleParameters(bundlePick: BundleSelection): Promise<ParameterDefinition[]> {
-    const jsonPath = bundleJSONPath(bundlePick);
-    return await parseParametersFromJSONFile(jsonPath);
+    const json = await bundleJSON(bundlePick);
+    return await parseParametersFromJSON(json);
 }
 
-async function parseParametersFromJSONFile(jsonFile: string): Promise<ParameterDefinition[]> {
-    const json = await fs.readFile(jsonFile, 'utf8');
+async function parseParametersFromJSON(json: string): Promise<ParameterDefinition[]> {
     const parameters = JSON.parse(json).parameters;
     const defs: ParameterDefinition[] = [];
     if (parameters) {

@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as request from 'request-promise-native';
 
 import { selectQuickPick } from './host';
 import { RepoBundle } from '../duffle/duffle.objectmodel';
-import * as dufflepaths from '../duffle/duffle.paths';
 import { cantHappen } from './never';
+import { fs } from './fs';
 
 export interface FolderBundleSelection {
     readonly kind: 'folder';
@@ -50,15 +51,37 @@ export function repoBundleSelection(bundle: RepoBundle): BundleSelection {
     return {
         kind: 'repo',
         label: bundle.name,
-        bundle: `${bundle.repository}/${bundle.name}`
+        bundle: `${bundle.repository}/${bundle.name}:${bundle.version}`
     };
 }
 
-export function bundleJSONPath(bundlePick: BundleSelection) {
+export async function bundleJSON(bundlePick: BundleSelection): Promise<string> {
     if (bundlePick.kind === "folder") {
-        return path.join(bundlePick.path, "bundle.json");
+        const jsonFile = path.join(bundlePick.path, "bundle.json");
+        return await fs.readFile(jsonFile, 'utf8');
     } else if (bundlePick.kind === "repo") {
-        return dufflepaths.repoBundlePath(bundlePick.bundle);
+        // TODO: probably stick the RepoBundle into RepoBundleSelection to save us parsing stuff out of the bundle ref string
+        const repoBundle = parseRepoBundle(bundlePick.bundle);
+        const url = `https://${repoBundle.repository}/index.json`;
+        const json = await request.get(url);
+        return extractBundleJSON(json, repoBundle.name, repoBundle.version);
     }
     return cantHappen(bundlePick);
+}
+
+function parseRepoBundle(bundle: string): RepoBundle {
+    const repoDelimiter = bundle.indexOf('/');
+    const repository = bundle.substring(0, repoDelimiter);
+    const tag = bundle.substring(repoDelimiter + 1);
+    const versionDelimiter = tag.indexOf(':');
+    const name = tag.substring(0, versionDelimiter);
+    const version = tag.substring(versionDelimiter + 1);
+    return { repository, name, version };
+}
+
+function extractBundleJSON(json: string, bundleName: string, bundleVersion: string): string {
+    const o = JSON.parse(json);
+    const bundleVersions: any[] = o.entries[bundleName];
+    const bundleVersionJSON = bundleVersions.find((v) => v.version === bundleVersion);
+    return JSON.stringify(bundleVersionJSON);
 }

@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import * as path from 'path';
 import * as vscode from 'vscode';
 
 import * as duffle from '../../duffle/duffle';
@@ -32,10 +31,7 @@ export class RepoExplorer implements vscode.TreeDataProvider<RepoExplorerNode> {
 async function getRootNodes(shell: Shell): Promise<RepoExplorerNode[]> {
     const lr = await duffle.listRepos(shell);
     if (succeeded(lr)) {
-        const paths = lr.result.map((p) => p.split(path.sep));
-        const firsts = paths.map((p) => p[0]);
-        const uniqueFirsts = _.uniq(firsts);
-        return uniqueFirsts.map((p) => new RepoNode([p], paths));
+        return lr.result.map((p) => new RepoNode(p));
     }
     return [new ErrorNode(lr.error[0])];
 }
@@ -46,49 +42,20 @@ interface RepoExplorerNode {
 }
 
 class RepoNode implements RepoExplorerNode {
-    constructor(private readonly path: string[], private readonly all: string[][]) { }
+    constructor(private readonly path: string) { }
 
     async getChildren(shell: Shell): Promise<RepoExplorerNode[]> {
-        const remainders = this.getSubPaths();
-        const firsts = remainders.map((p) => p[0]);
-        const uniqueFirsts = _.uniq(firsts);
-        const prefixes = uniqueFirsts.map((a) => Array<string>().concat(this.path, [a]));
-
-        if (prefixes.length > 0) {
-            return prefixes.map((p) => new RepoNode(p, this.all));
-        }
-
         const bundles = await duffle.search(shell);
         if (failed(bundles)) {
             return [new ErrorNode(bundles.error[0])];
         }
         return bundles.result
-            .filter((rb) => rb.repository === this.path.join('/'))
+            .filter((rb) => rb.repository === this.path)
             .map((rb) => new RepoBundleNode(rb));
     }
 
-    getSubPaths(): string[][] {
-        const matching = this.all.filter((p) => this.isSubPathOf(this.path, p));
-        const remainders = matching.map((p) => _.slice(p, this.path.length))
-            .filter((p) => p.length > 0);
-        return remainders;
-    }
-
     getTreeItem(): vscode.TreeItem {
-        return new vscode.TreeItem(this.path[this.path.length - 1], vscode.TreeItemCollapsibleState.Collapsed);
-    }
-
-    private isSubPathOf(p: string[], path: string[]): boolean {
-        if (p.length > path.length) {
-            return false;
-        }
-        if (p[0] !== path[0]) {
-            return false;
-        }
-        if (p.length === 1 && path.length >= 1) {
-            return true;
-        }
-        return this.isSubPathOf(_.slice(p, 1), _.slice(path, 1));
+        return new vscode.TreeItem(this.path, vscode.TreeItemCollapsibleState.Collapsed);
     }
 }
 
