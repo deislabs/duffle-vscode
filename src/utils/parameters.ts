@@ -38,7 +38,7 @@ function parameterEntryRow(p: ParameterDefinition): string {
     <td>${inputWidget(p)}</td>
 </tr>
 <tr>
-    <td colspan="2" style="font-size:80%">${p.metadata ? p.metadata.description : ''}</td>
+    <td colspan="2" style="font-size:80%">${p.metadata ? (p.metadata.description || '') : ''}</td>
 </tr>
 `;
 }
