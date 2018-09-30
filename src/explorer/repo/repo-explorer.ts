@@ -69,6 +69,7 @@ class RepoBundleNode implements RepoExplorerNode, RepoBundleRef {
     getTreeItem(): vscode.TreeItem {
         const treeItem = new vscode.TreeItem(this.bundle.name, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = "duffle.repoBundle";
+        treeItem.tooltip = `${this.bundle.name}:${this.bundle.version}`;
         return treeItem;
     }
 }
