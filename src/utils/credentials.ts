@@ -4,10 +4,10 @@ import * as duffle from '../duffle/duffle';
 import { Cancellable } from './cancellable';
 import { Shell } from './shell';
 import { failed } from './errorable';
-import { BundleSelection, bundleJSON } from './bundleselection';
+import { BundleManifest } from '../duffle/duffle.objectmodel';
 
-export async function promptForCredentials(bundlePick: BundleSelection, sh: Shell, prompt: string): Promise<Cancellable<string | undefined>> {
-    if (!(await bundleHasCredentials(bundlePick))) {
+export async function promptForCredentials(bundleManifest: BundleManifest, sh: Shell, prompt: string): Promise<Cancellable<string | undefined>> {
+    if (!(await hasCredentials(bundleManifest))) {
         return { cancelled: false, value: undefined };
     }
 
@@ -29,13 +29,7 @@ export async function promptForCredentials(bundlePick: BundleSelection, sh: Shel
     return { cancelled: false, value: credentialSet };
 }
 
-// TODO: deduplicate with parameters parser
-async function bundleHasCredentials(bundlePick: BundleSelection): Promise<boolean> {
-    const json = await bundleJSON(bundlePick);
-    return await parseHasCredentialsFromJSON(json);
-}
-
-async function parseHasCredentialsFromJSON(json: string): Promise<boolean> {
-    const credentials = JSON.parse(json).credentials;
-    return (credentials && Object.keys(credentials).length > 0);
+async function hasCredentials(manifest: BundleManifest): Promise<boolean> {
+    const credentials = manifest.credentials || {};
+    return Object.keys(credentials).length > 0;
 }

@@ -3,9 +3,10 @@ import * as path from 'path';
 import * as request from 'request-promise-native';
 
 import { selectQuickPick } from './host';
-import { RepoBundle } from '../duffle/duffle.objectmodel';
+import { RepoBundle, BundleManifest } from '../duffle/duffle.objectmodel';
 import { cantHappen } from './never';
 import { fs } from './fs';
+import { Errorable, map } from './errorable';
 
 export interface FolderBundleSelection {
     readonly kind: 'folder';
@@ -55,16 +56,30 @@ export function repoBundleSelection(bundle: RepoBundle): BundleSelection {
     };
 }
 
-export async function bundleJSON(bundlePick: BundleSelection): Promise<string> {
+export async function bundleManifest(bundlePick: BundleSelection): Promise<Errorable<BundleManifest>> {
+    const jsonText = await bundleJSONText(bundlePick);
+    return map(jsonText, JSON.parse);
+}
+
+async function bundleJSONText(bundlePick: BundleSelection): Promise<Errorable<string>> {
     if (bundlePick.kind === "folder") {
         const jsonFile = path.join(bundlePick.path, "bundle.json");
-        return await fs.readFile(jsonFile, 'utf8');
+        try {
+            return { succeeded: true, result: await fs.readFile(jsonFile, 'utf8') };
+        } catch (e) {
+            return { succeeded: false, error: [`${e}`] };
+        }
+        return { succeeded: true, result: await fs.readFile(jsonFile, 'utf8') };
     } else if (bundlePick.kind === "repo") {
         // TODO: probably stick the RepoBundle into RepoBundleSelection to save us parsing stuff out of the bundle ref string
-        const repoBundle = parseRepoBundle(bundlePick.bundle);
-        const url = `https://${repoBundle.repository}/index.json`;
-        const json = await request.get(url);
-        return extractBundleJSON(json, repoBundle.name, repoBundle.version);
+        try {
+            const repoBundle = parseRepoBundle(bundlePick.bundle);
+            const url = `https://${repoBundle.repository}/index.json`;
+            const json = await request.get(url);
+            return extractBundleJSON(json, repoBundle.name, repoBundle.version);
+        } catch (e) {
+            return { succeeded: false, error: [`${e}`] };
+        }
     }
     return cantHappen(bundlePick);
 }
@@ -79,9 +94,12 @@ function parseRepoBundle(bundle: string): RepoBundle {
     return { repository, name, version };
 }
 
-function extractBundleJSON(json: string, bundleName: string, bundleVersion: string): string {
+function extractBundleJSON(json: string, bundleName: string, bundleVersion: string): Errorable<string> {
     const o = JSON.parse(json);
-    const bundleVersions: any[] = o.entries[bundleName];
+    const bundleVersions: BundleManifest[] = o.entries[bundleName] || [];
     const bundleVersionJSON = bundleVersions.find((v) => v.version === bundleVersion);
-    return JSON.stringify(bundleVersionJSON);
+    if (!bundleVersionJSON) {
+        return { succeeded: false, error: ['Bundle details not found in repository'] };
+    }
+    return { succeeded: true, result: JSON.stringify(bundleVersionJSON) };
 }

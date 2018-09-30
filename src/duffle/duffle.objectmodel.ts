@@ -13,13 +13,24 @@ export interface RepoBundle {
 }
 
 export interface ParameterDefinition {
-    readonly name: string;
     readonly type: string;
     readonly allowedValues?: (number | string | boolean)[];
     readonly defaultValue?: number | string | boolean;
     readonly metadata?: { description?: string };
 }
 
+export interface CredentialLocation {
+    readonly env?: string;
+    readonly path?: string;
+}
+
 export interface CredentialSetRef {
     readonly credentialSetName: string;
+}
+
+export interface BundleManifest {
+    readonly name: string;
+    readonly version: string;
+    readonly parameters?: { [key: string]: ParameterDefinition };
+    readonly credentials?: { [key: string]: CredentialLocation };
 }

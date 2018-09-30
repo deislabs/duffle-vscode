@@ -4,10 +4,10 @@ import * as path from 'path';
 import { longRunning, showDuffleResult, refreshBundleExplorer } from '../utils/host';
 import * as duffle from '../duffle/duffle';
 import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
-import { succeeded, map, Errorable } from '../utils/errorable';
+import { succeeded, map, Errorable, failed } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
-import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection } from '../utils/bundleselection';
+import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleManifest } from '../utils/bundleselection';
 import { promptForParameters } from '../utils/parameters';
 import { promptForCredentials } from '../utils/credentials';
 
@@ -52,12 +52,18 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
         return;
     }
 
-    const credentialSet = await promptForCredentials(bundlePick, shell.shell, 'Credential set to install bundle with');
+    const manifest = await bundleManifest(bundlePick);
+    if (failed(manifest)) {
+        vscode.window.showErrorMessage(`Unable to load bundle: ${manifest.error[0]}`);
+        return;
+    }
+
+    const credentialSet = await promptForCredentials(manifest.result, shell.shell, 'Credential set to install bundle with');
     if (credentialSet.cancelled) {
         return;
     }
 
-    const parameterValues = await promptForParameters(bundlePick, 'Install', 'Enter installation parameters');
+    const parameterValues = await promptForParameters(bundlePick, manifest.result, 'Install', 'Enter installation parameters');
     if (parameterValues.cancelled) {
         return;
     }
