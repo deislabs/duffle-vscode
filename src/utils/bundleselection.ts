@@ -74,9 +74,9 @@ async function bundleJSONText(bundlePick: BundleSelection): Promise<Errorable<st
         // TODO: probably stick the RepoBundle into RepoBundleSelection to save us parsing stuff out of the bundle ref string
         try {
             const repoBundle = parseRepoBundle(bundlePick.bundle);
-            const url = `https://${repoBundle.repository}/index.json`;
+            const url = `https://${repoBundle.repository}/repositories/${repoBundle.name}/tags/${repoBundle.version}`;
             const json = await request.get(url);
-            return extractBundleJSON(json, repoBundle.name, repoBundle.version);
+            return { succeeded: true, result: json };
         } catch (e) {
             return { succeeded: false, error: [`${e}`] };
         }
@@ -92,14 +92,4 @@ function parseRepoBundle(bundle: string): RepoBundle {
     const name = tag.substring(0, versionDelimiter);
     const version = tag.substring(versionDelimiter + 1);
     return { repository, name, version };
-}
-
-function extractBundleJSON(json: string, bundleName: string, bundleVersion: string): Errorable<string> {
-    const o = JSON.parse(json);
-    const bundleVersions: BundleManifest[] = o.entries[bundleName] || [];
-    const bundleVersionJSON = bundleVersions.find((v) => v.version === bundleVersion);
-    if (!bundleVersionJSON) {
-        return { succeeded: false, error: ['Bundle details not found in repository'] };
-    }
-    return { succeeded: true, result: JSON.stringify(bundleVersionJSON) };
 }
