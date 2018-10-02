@@ -5,6 +5,7 @@ import * as duffle from '../../duffle/duffle';
 import { succeeded, failed } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
 import { RepoBundle, RepoBundleRef } from '../../duffle/duffle.objectmodel';
+import { namespace, nameOnly } from '../../utils/bundleselection';
 
 export class RepoExplorer implements vscode.TreeDataProvider<RepoExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -49,13 +50,31 @@ class RepoNode implements RepoExplorerNode {
         if (failed(bundles)) {
             return [new ErrorNode(bundles.error[0])];
         }
-        return bundles.result
+        return _.chain(bundles.result)
             .filter((rb) => rb.repository === this.path)
-            .map((rb) => new RepoBundleNode(rb));
+            .groupBy((rb) => namespace(rb))
+            .map((rb) => new RepoNamespaceNode(rb))
+            .value();
     }
 
     getTreeItem(): vscode.TreeItem {
         return new vscode.TreeItem(this.path, vscode.TreeItemCollapsibleState.Collapsed);
+    }
+}
+
+class RepoNamespaceNode implements RepoExplorerNode {
+    constructor(private readonly bundles: RepoBundle[]) { }
+
+    async getChildren(shell: Shell): Promise<RepoExplorerNode[]> {
+        return this.bundles.map((b) => new RepoBundleNode(b));
+    }
+
+    getTreeItem(): vscode.TreeItem {
+        return new vscode.TreeItem(this.namespace, vscode.TreeItemCollapsibleState.Collapsed);
+    }
+
+    private get namespace(): string {
+        return namespace(this.bundles[0]);
     }
 }
 
@@ -67,7 +86,7 @@ class RepoBundleNode implements RepoExplorerNode, RepoBundleRef {
     }
 
     getTreeItem(): vscode.TreeItem {
-        const treeItem = new vscode.TreeItem(this.bundle.name, vscode.TreeItemCollapsibleState.None);
+        const treeItem = new vscode.TreeItem(nameOnly(this.bundle), vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = "duffle.repoBundle";
         treeItem.tooltip = `${this.bundle.name}:${this.bundle.version}`;
         return treeItem;

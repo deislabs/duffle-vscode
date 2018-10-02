@@ -93,3 +93,21 @@ function parseRepoBundle(bundle: string): RepoBundle {
     const version = tag.substring(versionDelimiter + 1);
     return { repository, name, version };
 }
+
+export function namespace(bundle: RepoBundle) {
+    const name = bundle.name;
+    const sepIndex = name.indexOf('/');
+    if (sepIndex < 0) {
+        return name;
+    }
+    return name.substring(0, sepIndex);
+}
+
+export function nameOnly(bundle: RepoBundle) {
+    const name = bundle.name;
+    const sepIndex = name.indexOf('/');
+    if (sepIndex < 0) {
+        return name;
+    }
+    return name.substring(sepIndex + 1);
+}
