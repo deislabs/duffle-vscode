@@ -94,11 +94,11 @@ function parseRepoBundle(bundle: string): RepoBundle {
     return { repository, name, version };
 }
 
-export function namespace(bundle: RepoBundle): string {
+export function namespace(bundle: RepoBundle): string | undefined {
     const name = bundle.name;
     const sepIndex = name.indexOf('/');
     if (sepIndex < 0) {
-        return name;
+        return undefined;
     }
     return name.substring(0, sepIndex);
 }
@@ -108,7 +108,7 @@ export function nameOnly(bundle: RepoBundle): string {
 }
 
 export function parseNameOnly(bundleName: string): string {
-    const sepIndex = bundleName.indexOf('/');
+    const sepIndex = bundleName.lastIndexOf('/');
     if (sepIndex < 0) {
         return bundleName;
     }

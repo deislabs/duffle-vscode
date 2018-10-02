@@ -6,6 +6,7 @@ import { succeeded, failed } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
 import { RepoBundle, RepoBundleRef } from '../../duffle/duffle.objectmodel';
 import { namespace, nameOnly } from '../../utils/bundleselection';
+import { iter, Group } from '../../utils/iterable';
 
 export class RepoExplorer implements vscode.TreeDataProvider<RepoExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -50,11 +51,20 @@ class RepoNode implements RepoExplorerNode {
         if (failed(bundles)) {
             return [new ErrorNode(bundles.error[0])];
         }
-        return _.chain(bundles.result)
+        const grouped = iter(bundles.result)
             .filter((rb) => rb.repository === this.path)
             .groupBy((rb) => namespace(rb))
-            .map((rb) => new RepoNamespaceNode(rb))
-            .value();
+            .collect((g) => this.nodes(g))
+            .toArray();
+        return grouped;
+    }
+
+    *nodes(group: Group<string | undefined, RepoBundle>): IterableIterator<RepoExplorerNode> {
+        if (group.key) {
+            yield new RepoNamespaceNode(group.key, group.values);
+        } else {
+            yield* group.values.map((rb) => new RepoBundleNode(rb));
+        }
     }
 
     getTreeItem(): vscode.TreeItem {
@@ -63,7 +73,10 @@ class RepoNode implements RepoExplorerNode {
 }
 
 class RepoNamespaceNode implements RepoExplorerNode {
-    constructor(private readonly bundles: RepoBundle[]) { }
+    constructor(
+        private readonly namespace: string,
+        private readonly bundles: RepoBundle[]) {
+    }
 
     async getChildren(shell: Shell): Promise<RepoExplorerNode[]> {
         return this.bundles.map((b) => new RepoBundleNode(b));
@@ -71,10 +84,6 @@ class RepoNamespaceNode implements RepoExplorerNode {
 
     getTreeItem(): vscode.TreeItem {
         return new vscode.TreeItem(this.namespace, vscode.TreeItemCollapsibleState.Collapsed);
-    }
-
-    private get namespace(): string {
-        return namespace(this.bundles[0]);
     }
 }
 
