@@ -23,7 +23,7 @@ export interface RepoBundleSelection {
 export type BundleSelection = FolderBundleSelection | RepoBundleSelection;
 
 export async function promptBundle(prompt: string): Promise<BundleSelection | undefined> {
-    const bundles = await vscode.workspace.findFiles('**/cnab/bundle.json');
+    const bundles = await vscode.workspace.findFiles('**/bundle.json');
     if (!bundles || bundles.length === 0) {
         await vscode.window.showErrorMessage("This command requires a bundle file in the current workspace.");
         return undefined;
@@ -40,7 +40,7 @@ export async function promptBundle(prompt: string): Promise<BundleSelection | un
 }
 
 export function fileBundleSelection(bundleFile: vscode.Uri): BundleSelection {
-    const bundleDir = path.dirname(path.dirname(bundleFile.fsPath));
+    const bundleDir = path.dirname(bundleFile.fsPath);
     return {
         kind: 'folder',
         label: path.basename(bundleDir),
@@ -63,7 +63,7 @@ export async function bundleManifest(bundlePick: BundleSelection): Promise<Error
 
 async function bundleJSONText(bundlePick: BundleSelection): Promise<Errorable<string>> {
     if (bundlePick.kind === "folder") {
-        const jsonFile = path.join(bundlePick.path, "bundle.json");
+        const jsonFile = bundleFilePath(bundlePick);
         try {
             return { succeeded: true, result: await fs.readFile(jsonFile, 'utf8') };
         } catch (e) {
@@ -82,6 +82,10 @@ async function bundleJSONText(bundlePick: BundleSelection): Promise<Errorable<st
         }
     }
     return cantHappen(bundlePick);
+}
+
+export function bundleFilePath(bundlePick: FolderBundleSelection) {
+    return path.join(bundlePick.path, "bundle.json");
 }
 
 function parseRepoBundle(bundle: string): RepoBundle {

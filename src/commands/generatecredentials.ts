@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 
 import { longRunning, showDuffleResult, refreshCredentialExplorer } from '../utils/host';
 import * as duffle from '../duffle/duffle';
@@ -7,7 +6,7 @@ import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
 import { succeeded, map, Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
-import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection } from '../utils/bundleselection';
+import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleFilePath } from '../utils/bundleselection';
 
 export async function generateCredentials(target?: any): Promise<void> {
     if (!target) {
@@ -56,8 +55,7 @@ async function generateCredentialsCore(bundlePick: BundleSelection): Promise<voi
 
 async function generateCredentialsTo(bundlePick: BundleSelection, credentialSetName: string): Promise<Errorable<string>> {
     if (bundlePick.kind === 'folder') {
-        const folderPath = bundlePick.path;
-        const bundlePath = path.join(folderPath, "cnab", "bundle.json");
+        const bundlePath = bundleFilePath(bundlePick);
         const generateResult = await longRunning(`Duffle generating credentials for ${bundlePath}`,
             () => duffle.generateCredentialsForFile(shell.shell, bundlePath, credentialSetName)
         );

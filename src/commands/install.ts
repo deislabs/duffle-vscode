@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 
 import { longRunning, showDuffleResult, refreshBundleExplorer } from '../utils/host';
 import * as duffle from '../duffle/duffle';
@@ -7,7 +6,7 @@ import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
 import { succeeded, map, Errorable, failed } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
-import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleManifest, parseNameOnly } from '../utils/bundleselection';
+import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleManifest, parseNameOnly, bundleFilePath } from '../utils/bundleselection';
 import { promptForParameters } from '../utils/parameters';
 import { promptForCredentials } from '../utils/credentials';
 
@@ -80,8 +79,7 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
 
 async function installTo(bundlePick: BundleSelection, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<string>> {
     if (bundlePick.kind === 'folder') {
-        const folderPath = bundlePick.path;
-        const bundlePath = path.join(folderPath, "cnab", "bundle.json");
+        const bundlePath = bundleFilePath(bundlePick);
         const installResult = await longRunning(`Duffle installing ${bundlePath}`,
             () => duffle.installFile(shell.shell, bundlePath, name, params, credentialSet)
         );
