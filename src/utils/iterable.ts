@@ -7,7 +7,13 @@ export interface Enumerable<T> extends Iterable<T> {
     map<U>(fn: (t: T) => U): Enumerable<U>;
     collect<U>(fn: (t: T) => Iterable<U>): Enumerable<U>;
     filter(predicate: (t: T) => boolean): Enumerable<T>;
+    groupBy<K>(selector: (t: T) => K): Enumerable<Group<K, T>>;
     toArray(): T[];
+}
+
+export interface Group<K, T> {
+    readonly key: K;
+    readonly values: T[];
 }
 
 class EnumerableImpl<T> implements Enumerable<T> {
@@ -56,6 +62,22 @@ class EnumerableImpl<T> implements Enumerable<T> {
                 yield item;
             }
         }
+    }
+
+    // This is very inefficient for large collections (or, rather, for large
+    // numbers of groups) - deal to it if that becomes a problem
+    groupBy<K>(selector: (t: T) => K): Enumerable<Group<K, T>> {
+        const groups: Group<K, T>[] = [];
+        for (const item of this.source) {
+            const key = selector(item);
+            const group = groups.find((g) => g.key === key);
+            if (group) {
+                group.values.push(item);
+            } else {
+                groups.push({ key: key, values: [item] });
+            }
+        }
+        return iter(groups);
     }
 
     toArray(): T[] {

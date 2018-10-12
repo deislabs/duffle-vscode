@@ -1,13 +1,16 @@
-import { fs } from './fs';
-import { ParameterDefinition } from "../duffle/duffle.objectmodel";
-import { BundleSelection, bundleJSONPath } from "./bundleselection";
+import { ParameterDefinition, BundleManifest } from "../duffle/duffle.objectmodel";
+import { BundleSelection } from "./bundleselection";
 import { END_DIALOG_FN, dialog } from "./dialog";
 import { Cancellable } from './cancellable';
 
 export type ParameterValuesPromptResult = Cancellable<{ [key: string]: string }>;
 
-export async function promptForParameters(bundlePick: BundleSelection, actionName: string, prompt: string): Promise<ParameterValuesPromptResult> {
-    const definitions = await bundleParameters(bundlePick);
+interface ParameterDefinitionMapping extends ParameterDefinition {
+    readonly name: string;
+}
+
+export async function promptForParameters(bundlePick: BundleSelection, bundleManifest: BundleManifest, actionName: string, prompt: string): Promise<ParameterValuesPromptResult> {
+    const definitions = parseParameters(bundleManifest);
     if (!definitions || definitions.length === 0) {
         return { cancelled: false, value: {} };
     }
@@ -28,23 +31,23 @@ export async function promptForParameters(bundlePick: BundleSelection, actionNam
     return { cancelled: false, value: parameterValues };
 }
 
-function parameterEntryTable(ps: ParameterDefinition[]): string {
+function parameterEntryTable(ps: ParameterDefinitionMapping[]): string {
     const rows = ps.map(parameterEntryRow).join('');
     return `<table>${rows}</table>`;
 }
 
-function parameterEntryRow(p: ParameterDefinition): string {
+function parameterEntryRow(p: ParameterDefinitionMapping): string {
     return `<tr valign="baseline">
     <td><b>${p.name}</b></td>
     <td>${inputWidget(p)}</td>
 </tr>
 <tr>
-    <td colspan="2" style="font-size:80%">${p.metadata ? p.metadata.description : ''}</td>
+    <td colspan="2" style="font-size:80%">${p.metadata ? (p.metadata.description || '') : ''}</td>
 </tr>
 `;
 }
 
-function inputWidget(p: ParameterDefinition): string {
+function inputWidget(p: ParameterDefinitionMapping): string {
     if (p.type === "bool") {
         return `<select name="${p.name}"><option>True</option><option>False</option></select>`;
     }
@@ -56,15 +59,9 @@ function inputWidget(p: ParameterDefinition): string {
     return `<input name="${p.name}" type="text" value="${defval}" />`;
 }
 
-async function bundleParameters(bundlePick: BundleSelection): Promise<ParameterDefinition[]> {
-    const jsonPath = bundleJSONPath(bundlePick);
-    return await parseParametersFromJSONFile(jsonPath);
-}
-
-async function parseParametersFromJSONFile(jsonFile: string): Promise<ParameterDefinition[]> {
-    const json = await fs.readFile(jsonFile, 'utf8');
-    const parameters = JSON.parse(json).parameters;
-    const defs: ParameterDefinition[] = [];
+function parseParameters(manifest: BundleManifest): ParameterDefinitionMapping[] {
+    const parameters = manifest.parameters;
+    const defs: ParameterDefinitionMapping[] = [];
     if (parameters) {
         for (const k in parameters) {
             defs.push({ name: k, ...parameters[k] });

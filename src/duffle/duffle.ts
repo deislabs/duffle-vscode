@@ -49,13 +49,8 @@ export function list(sh: shell.Shell): Promise<Errorable<string[]>> {
     return invokeObj(sh, 'list', '', {}, parse);
 }
 
-export function listRepos(sh: shell.Shell): Promise<Errorable<string[]>> {
-    function parse(stdout: string): string[] {
-        return stdout.split('\n')
-            .map((l) => l.trim())
-            .filter((l) => l.length > 0);
-    }
-    return invokeObj(sh, 'repo list', '', {}, parse);
+export async function listRepos(sh: shell.Shell): Promise<Errorable<string[]>> {
+    return { succeeded: true, result: ["hub.cnlabs.io"] };
 }
 
 export function listCredentialSets(sh: shell.Shell): Promise<Errorable<string[]>> {
@@ -72,7 +67,7 @@ export function search(sh: shell.Shell): Promise<Errorable<RepoBundle[]>> {
         const lines = stdout.split('\n')
             .map((l) => l.trim())
             .filter((l) => l.length > 0);
-        return fromHeaderedTable<RepoBundle>(lines);
+        return fromHeaderedTable<RepoBundle>(lines).map((b) => ({ repository: "hub.cnlabs.io", ...b }));
     }
     return invokeObj(sh, 'search', '', {}, parse);
 }
@@ -83,6 +78,10 @@ export async function upgrade(sh: shell.Shell, bundleName: string): Promise<Erro
 
 export async function uninstall(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
     return await invokeObj(sh, 'uninstall', bundleName, {}, (s) => null);
+}
+
+export async function pushFile(sh: shell.Shell, filePath: string, repo: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'push', `-f "${filePath}" --repo ${repo}`, {}, (s) => null);
 }
 
 export function showStatus(bundleName: string): void {

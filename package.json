@@ -20,7 +20,7 @@
         "onCommand:duffle.bundleUninstall",
         "onCommand:duffle.createProject",
         "onCommand:duffle.build",
-        "onCommand:duffle.publish",
+        "onCommand:duffle.push",
         "onCommand:duffle.install",
         "onCommand:duffle.generateCredentials",
         "onCommand:duffle.refreshRepoExplorer",
@@ -71,8 +71,8 @@
                 "category": "Duffle"
             },
             {
-                "command": "duffle.publish",
-                "title": "Publish Bundle to Repo",
+                "command": "duffle.push",
+                "title": "Push Bundle to Repo",
                 "category": "Duffle"
             },
             {
@@ -205,7 +205,7 @@
                     "group": "9"
                 },
                 {
-                    "command": "duffle.publish",
+                    "command": "duffle.push",
                     "when": "resourceFilename == bundle.json",
                     "group": "9"
                 }
@@ -297,9 +297,13 @@
     },
     "dependencies": {
         "@types/lodash": "^4.14.113",
+        "@types/request": "^2.47.1",
+        "@types/request-promise-native": "^1.0.15",
         "@types/shelljs": "^0.8.0",
         "@types/tmp": "0.0.33",
         "lodash": "^4.17.10",
+        "request": "^2.88.0",
+        "request-promise-native": "^1.0.5",
         "shelljs": "^0.7.7",
         "tmp": "^0.0.33"
     },
