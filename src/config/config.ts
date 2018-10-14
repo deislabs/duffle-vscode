@@ -13,3 +13,7 @@ export function dufflePath(): string | undefined {
 export function toolPath(tool: string): string | undefined {
     return vscode.workspace.getConfiguration(EXTENSION_CONFIG_KEY)[`${tool}-path`];
 }
+
+export function repositories(): string[] {
+    return vscode.workspace.getConfiguration(EXTENSION_CONFIG_KEY)["repositories"] || [];
+}

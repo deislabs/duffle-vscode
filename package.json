@@ -133,6 +133,13 @@
                         "duffle-path": {
                             "type": "string",
                             "description": "File path to a duffle binary"
+                        },
+                        "repositories": {
+                            "type": "array",
+                            "description": "Known bundle repositories",
+                            "items": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
