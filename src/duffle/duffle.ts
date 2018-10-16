@@ -50,7 +50,7 @@ export function list(sh: shell.Shell): Promise<Errorable<string[]>> {
 }
 
 export async function listRepos(sh: shell.Shell): Promise<Errorable<string[]>> {
-    return { succeeded: true, result: ["hub.cnlabs.io"] };
+    return { succeeded: true, result: ["hub.cnlabs.io"].concat(config.repositories()) };
 }
 
 export function listCredentialSets(sh: shell.Shell): Promise<Errorable<string[]>> {
