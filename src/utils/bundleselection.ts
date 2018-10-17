@@ -52,8 +52,12 @@ export function repoBundleSelection(bundle: RepoBundle): BundleSelection {
     return {
         kind: 'repo',
         label: bundle.name,
-        bundle: `${bundle.repository}/${bundle.name}:${bundle.version}`
+        bundle: qualifiedBundleRef(bundle)
     };
+}
+
+export function qualifiedBundleRef(bundle: RepoBundle): string {
+    return `${bundle.repository}/${bundle.name}:${bundle.version}`;
 }
 
 export async function bundleManifest(bundlePick: BundleSelection): Promise<Errorable<BundleManifest>> {

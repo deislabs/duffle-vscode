@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 
-import { BundleRef, CredentialSetRef } from './duffle/duffle.objectmodel';
+import { BundleRef, CredentialSetRef, RepoBundleRef } from './duffle/duffle.objectmodel';
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { RepoExplorer } from './explorer/repo/repo-explorer';
 import { CredentialExplorer } from './explorer/credential/credential-explorer';
@@ -17,6 +17,7 @@ import { succeeded } from './utils/errorable';
 import { selectProjectCreator } from './projects/ui';
 import { exposeParameter } from './commands/exposeparameter';
 import { generateCredentials } from './commands/generatecredentials';
+import { qualifiedBundleRef } from './utils/bundleselection';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
@@ -34,6 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.createProject', createProject),
         vscode.commands.registerCommand('duffle.build', build),
         vscode.commands.registerCommand('duffle.push', push),
+        vscode.commands.registerCommand('duffle.pull', pull),
         vscode.commands.registerCommand('duffle.install', install),
         vscode.commands.registerCommand('duffle.generateCredentials', generateCredentials),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
@@ -130,6 +132,17 @@ async function bundleUninstall(bundle: BundleRef): Promise<void> {
     }
 
     await showDuffleResult('uninstall', bundle.bundleName, uninstallResult);
+}
+
+async function pull(bundle?: RepoBundleRef): Promise<void> {
+    if (!bundle) {
+        await vscode.window.showErrorMessage('This command requires a bundle selected in a repo');
+        return;
+    }
+
+    const pullResult = await duffle.pull(shell.shell, qualifiedBundleRef(bundle.bundle));
+
+    await showDuffleResult('pull', bundle.bundle.name, pullResult);
 }
 
 async function credentialsetDelete(credentialSet: CredentialSetRef): Promise<void> {

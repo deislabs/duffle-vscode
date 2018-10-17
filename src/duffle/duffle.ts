@@ -84,6 +84,10 @@ export async function pushFile(sh: shell.Shell, filePath: string, repo: string):
     return await invokeObj(sh, 'push', `-f "${filePath}" --repo ${repo}`, {}, (s) => null);
 }
 
+export async function pull(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'pull', `${bundleName}`, {}, (s) => null);
+}
+
 export function showStatus(bundleName: string): void {
     invokeInTerminal(`status ${bundleName}`);
 }

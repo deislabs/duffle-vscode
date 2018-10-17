@@ -21,6 +21,7 @@
         "onCommand:duffle.createProject",
         "onCommand:duffle.build",
         "onCommand:duffle.push",
+        "onCommand:duffle.pull",
         "onCommand:duffle.install",
         "onCommand:duffle.generateCredentials",
         "onCommand:duffle.refreshRepoExplorer",
@@ -73,6 +74,11 @@
             {
                 "command": "duffle.push",
                 "title": "Push Bundle to Repo",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.pull",
+                "title": "Pull Bundle from Repo",
                 "category": "Duffle"
             },
             {
@@ -191,6 +197,11 @@
                 },
                 {
                     "command": "duffle.generateCredentials",
+                    "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
+                    "group": "1"
+                },
+                {
+                    "command": "duffle.pull",
                     "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
                     "group": "1"
                 },
