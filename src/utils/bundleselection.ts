@@ -12,7 +12,7 @@ export interface FileBundleSelection {
     readonly kind: 'file';
     readonly signed: boolean;
     readonly label: string;
-    readonly fsPath: string;
+    readonly path: string;
 }
 
 export interface RepoBundleSelection {
@@ -55,7 +55,7 @@ export function fileBundleSelection(bundleFile: vscode.Uri): BundleSelection {
         kind: 'file',
         signed: ext === '.cnab',
         label: `${containingDir}/${path.basename(bundleFilePath)}`,
-        fsPath: bundleFilePath
+        path: bundleFilePath
     };
 }
 
@@ -97,7 +97,7 @@ async function readBundleText(bundlePick: BundleSelection): Promise<Errorable<st
 }
 
 export function bundleFilePath(bundlePick: FileBundleSelection) {
-    return bundlePick.fsPath;
+    return bundlePick.path;
 }
 
 function parseRepoBundle(bundle: string): RepoBundle {
@@ -153,7 +153,7 @@ const SAFE_NAME_ILLEGAL_CHARACTERS = /[^A-Za-z0-9_-]/g;
 
 export function suggestName(bundlePick: BundleSelection): string {
     if (bundlePick.kind === 'file') {
-        const containingDir = path.basename(path.dirname(bundlePick.fsPath));
+        const containingDir = path.basename(path.dirname(bundlePick.path));
         return safeName(containingDir);
     } else {
         const baseName = parseNameOnly(bundlePick.kind);
