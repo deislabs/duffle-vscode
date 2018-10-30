@@ -31,7 +31,8 @@
         "onView:duffle.bundleExplorer",
         "onView:duffle.repoExplorer",
         "onView:duffle.credentialExplorer",
-        "onLanguage:json"
+        "onLanguage:json",
+        "workspaceContains:**/bundle.cnab"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -207,13 +208,28 @@
                     "group": "9"
                 },
                 {
+                    "command": "duffle.install",
+                    "when": "resourceFilename == bundle.cnab",
+                    "group": "9"
+                },
+                {
                     "command": "duffle.generateCredentials",
                     "when": "resourceFilename == bundle.json",
                     "group": "9"
                 },
                 {
+                    "command": "duffle.generateCredentials",
+                    "when": "resourceFilename == bundle.cnab",
+                    "group": "9"
+                },
+                {
                     "command": "duffle.push",
                     "when": "resourceFilename == bundle.json",
+                    "group": "9"
+                },
+                {
+                    "command": "duffle.push",
+                    "when": "resourceFilename == bundle.cnab",
                     "group": "9"
                 }
             ],

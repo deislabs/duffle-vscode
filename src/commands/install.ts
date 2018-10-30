@@ -6,7 +6,7 @@ import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
 import { succeeded, map, Errorable, failed } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
-import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleManifest, parseNameOnly, bundleFilePath } from '../utils/bundleselection';
+import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleManifest, bundleFilePath, suggestName } from '../utils/bundleselection';
 import { promptForParameters } from '../utils/parameters';
 import { promptForCredentials } from '../utils/credentials';
 
@@ -46,7 +46,7 @@ async function installRepoBundle(bundle: RepoBundle): Promise<void> {
 }
 
 async function installCore(bundlePick: BundleSelection): Promise<void> {
-    const suggestedName = safeName(bundlePick.label);
+    const suggestedName = suggestName(bundlePick);
     const name = await vscode.window.showInputBox({ prompt: `Install bundle in ${bundlePick.label} as...`, value: suggestedName });
     if (!name) {
         return;
@@ -78,7 +78,7 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
 }
 
 async function installTo(bundlePick: BundleSelection, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<string>> {
-    if (bundlePick.kind === 'folder') {
+    if (bundlePick.kind === 'file') {
         const bundlePath = bundleFilePath(bundlePick);
         const installResult = await longRunning(`Duffle installing ${bundlePath}`,
             () => duffle.installFile(shell.shell, bundlePath, name, params, credentialSet)
@@ -91,11 +91,4 @@ async function installTo(bundlePick: BundleSelection, name: string, params: { [k
         return map(installResult, (_) => bundlePick.bundle);
     }
     return cantHappen(bundlePick);
-}
-
-const INSTALL_NAME_ILLEGAL_CHARACTERS = /[^A-Za-z0-9_-]/g;
-
-function safeName(bundleName: string): string {
-    const baseName = parseNameOnly(bundleName);
-    return baseName.replace(INSTALL_NAME_ILLEGAL_CHARACTERS, '-');
 }

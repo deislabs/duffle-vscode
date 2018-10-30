@@ -1,0 +1,26 @@
+{
+    "name": "fancy",
+    "invocationImages": [
+        {
+            "imageType": "docker",
+            "image": "technosophos/helloworld:0.1.0"
+        }
+    ],
+    "images": [],
+    "parameters": {
+        "foo": {
+            "type": "string"
+        },
+        "bar": {
+            "type": "string"
+        }
+    },
+    "credentials": {
+        "foo": {
+            "path": "pfoo"
+        },
+        "bar": {
+            "env": "ebar"
+        }
+    }
+}

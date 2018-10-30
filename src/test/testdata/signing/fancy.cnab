@@ -1,0 +1,51 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+{
+  "name": "fancy",
+  "version": "",
+  "description": "",
+  "keywords": null,
+  "maintainers": null,
+  "invocationImages": [
+    {
+      "imageType": "docker",
+      "image": "technosophos/helloworld:0.1.0"
+    }
+  ],
+  "images": [],
+  "parameters": {
+    "bar": {
+      "type": "string",
+      "metadata": {}
+    },
+    "foo": {
+      "type": "string",
+      "metadata": {}
+    }
+  },
+  "credentials": {
+    "bar": {
+      "path": "",
+      "env": "ebar"
+    },
+    "foo": {
+      "path": "pfoo",
+      "env": ""
+    }
+  },
+  "files": null
+}
+-----BEGIN PGP SIGNATURE-----
+
+wsDcBAEBCAAQBQJb2N4LCRCpJ7BM9jT5NAAAHMAMAI1LWpbDFntKTdm5zWpOOCw1
+4mFoMSjJqQceQZ+tn8sr+f66epAjiT4mMeBypWXPTeoDiOucqUMyJo4n3KyJbwEd
+Uo8s023W4LgUeylLq+Ki8K5V3eoKZre8N0cDgx1QIwey/q3eo6A4/tOEaIgavBFa
+BOjy8wypoqVXi7P8T95HFCYBSjcnCZGs3nLg38zBXW9xaeOSW2wZfuh93rzHibLx
+cezBrfvo9bd8KLt/mBinSCDMp7G4gplxVR4ySd/HqPxXNzPYwLIvZXYguzaGzxfl
++VTQe13jwm2YdTJxBMGRDvLrKPJL/3Qb5bWJep9sVEuUquPvk+SP1gtNNbtChDZe
+3ZwVSM2JlKCUOQZbwMSuOuGsMHYtJ2qVInc8WxU+ye51AkS9B5b1MollsLC7wxko
+8LVIB+8Go/EGV387v2Zifa441/t1N3r3ZUYfCHae9Ae6GpI+iGxqVz6D8xJ3nR0r
+28o3OLVcKda8Ul5SykI8AAhLz+2d29s00sJPFk5C9g==
+=mq9T
+-----END PGP SIGNATURE-----

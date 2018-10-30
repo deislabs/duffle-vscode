@@ -51,7 +51,7 @@ async function pushCore(bundlePick: BundleSelection): Promise<void> {
 }
 
 async function pushTo(bundlePick: BundleSelection, repo: string): Promise<Errorable<string>> {
-    if (bundlePick.kind === 'folder') {
+    if (bundlePick.kind === 'file') {
         const bundlePath = bundleFilePath(bundlePick);
         const pushResult = await longRunning(`Duffle push ${bundlePath}`,
             () => duffle.pushFile(shell.shell, bundlePath, repo)
