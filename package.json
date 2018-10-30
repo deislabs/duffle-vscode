@@ -31,8 +31,7 @@
         "onView:duffle.bundleExplorer",
         "onView:duffle.repoExplorer",
         "onView:duffle.credentialExplorer",
-        "onLanguage:json",
-        "workspaceContains:**/bundle.cnab"
+        "onLanguage:json"
     ],
     "main": "./out/extension",
     "contributes": {
