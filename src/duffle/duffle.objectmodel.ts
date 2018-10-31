@@ -1,4 +1,4 @@
-export interface BundleRef {
+export interface InstallationRef {
     readonly bundleName: string;
 }
 

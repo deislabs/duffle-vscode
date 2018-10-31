@@ -3,19 +3,19 @@ import * as vscode from 'vscode';
 import * as duffle from '../../duffle/duffle';
 import { succeeded } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
-import { BundleRef } from '../../duffle/duffle.objectmodel';
+import { InstallationRef } from '../../duffle/duffle.objectmodel';
 
-export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNode> {
+export class InstallationExplorer implements vscode.TreeDataProvider<InstallationExplorerNode> {
     constructor(private readonly shell: Shell) { }
 
-    private onDidChangeTreeDataEmitter: vscode.EventEmitter<BundleExplorerNode | undefined> = new vscode.EventEmitter<BundleExplorerNode | undefined>();
-    readonly onDidChangeTreeData: vscode.Event<BundleExplorerNode | undefined> = this.onDidChangeTreeDataEmitter.event;
+    private onDidChangeTreeDataEmitter: vscode.EventEmitter<InstallationExplorerNode | undefined> = new vscode.EventEmitter<InstallationExplorerNode | undefined>();
+    readonly onDidChangeTreeData: vscode.Event<InstallationExplorerNode | undefined> = this.onDidChangeTreeDataEmitter.event;
 
-    getTreeItem(element: BundleExplorerNode): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    getTreeItem(element: InstallationExplorerNode): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element.getTreeItem();
     }
 
-    getChildren(element?: any): vscode.ProviderResult<BundleExplorerNode[]> {
+    getChildren(element?: any): vscode.ProviderResult<InstallationExplorerNode[]> {
         if (!element) {
             return getBundleNodes(this.shell);
         }
@@ -27,23 +27,23 @@ export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNod
     }
 }
 
-async function getBundleNodes(shell: Shell): Promise<BundleExplorerNode[]> {
+async function getBundleNodes(shell: Shell): Promise<InstallationExplorerNode[]> {
     const lr = await duffle.list(shell);
     if (succeeded(lr)) {
-        return lr.result.map((n) => new BundleNode(n));
+        return lr.result.map((n) => new InstallationNode(n));
     }
     return [new ErrorNode(lr.error[0])];
 }
 
-interface BundleExplorerNode {
-    getChildren(): Promise<BundleExplorerNode[]>;
+interface InstallationExplorerNode {
+    getChildren(): Promise<InstallationExplorerNode[]>;
     getTreeItem(): vscode.TreeItem;
 }
 
-class BundleNode implements BundleExplorerNode, BundleRef {
+class InstallationNode implements InstallationExplorerNode, InstallationRef {
     constructor(readonly bundleName: string) { }
 
-    async getChildren(): Promise<BundleExplorerNode[]> {
+    async getChildren(): Promise<InstallationExplorerNode[]> {
         return [];
     }
 
@@ -54,10 +54,10 @@ class BundleNode implements BundleExplorerNode, BundleRef {
     }
 }
 
-class ErrorNode implements BundleExplorerNode {
+class ErrorNode implements InstallationExplorerNode {
     constructor(private readonly error: string) { }
 
-    async getChildren(): Promise<BundleExplorerNode[]> {
+    async getChildren(): Promise<InstallationExplorerNode[]> {
         return [];
     }
 
