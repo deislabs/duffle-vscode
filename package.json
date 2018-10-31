@@ -297,7 +297,7 @@
             "duffle": [
                 {
                     "id": "duffle.bundleExplorer",
-                    "name": "Bundles"
+                    "name": "Installations"
                 },
                 {
                     "id": "duffle.repoExplorer",
