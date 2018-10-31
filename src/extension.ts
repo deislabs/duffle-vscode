@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 
 import { BundleRef, CredentialSetRef } from './duffle/duffle.objectmodel';
-import { BundleExplorer } from './explorer/bundle/bundle-explorer';
+import { BundleExplorer } from './explorer/installation/installation-explorer';
 import { RepoExplorer } from './explorer/repo/repo-explorer';
 import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
