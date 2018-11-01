@@ -8,8 +8,9 @@ import { cantHappen } from './never';
 import { fs } from './fs';
 import { Errorable, map } from './errorable';
 
-export interface FolderBundleSelection {
-    readonly kind: 'folder';
+export interface FileBundleSelection {
+    readonly kind: 'file';
+    readonly signed: boolean;
     readonly label: string;
     readonly path: string;
 }
@@ -20,10 +21,10 @@ export interface RepoBundleSelection {
     readonly bundle: string;
 }
 
-export type BundleSelection = FolderBundleSelection | RepoBundleSelection;
+export type BundleSelection = FileBundleSelection | RepoBundleSelection;
 
 export async function promptBundle(prompt: string): Promise<BundleSelection | undefined> {
-    const bundles = await vscode.workspace.findFiles('**/bundle.json');
+    const bundles = await workspaceBundleFiles();
     if (!bundles || bundles.length === 0) {
         await vscode.window.showErrorMessage("This command requires a bundle file in the current workspace.");
         return undefined;
@@ -39,12 +40,22 @@ export async function promptBundle(prompt: string): Promise<BundleSelection | un
     return bundlePick;
 }
 
+async function workspaceBundleFiles(): Promise<vscode.Uri[]> {
+    const unsignedBundles = vscode.workspace.findFiles('**/bundle.json');
+    const signedBundles = vscode.workspace.findFiles('**/bundle.cnab');
+    const bundles = ((await unsignedBundles) || []).concat((await signedBundles) || []);
+    return bundles;
+}
+
 export function fileBundleSelection(bundleFile: vscode.Uri): BundleSelection {
-    const bundleDir = path.dirname(bundleFile.fsPath);
+    const bundleFilePath = bundleFile.fsPath;
+    const ext = path.extname(bundleFilePath);
+    const containingDir = path.basename(path.dirname(bundleFilePath));
     return {
-        kind: 'folder',
-        label: path.basename(bundleDir),
-        path: bundleDir
+        kind: 'file',
+        signed: ext === '.cnab',
+        label: `${containingDir}/${path.basename(bundleFilePath)}`,
+        path: bundleFilePath
     };
 }
 
@@ -57,19 +68,20 @@ export function repoBundleSelection(bundle: RepoBundle): BundleSelection {
 }
 
 export async function bundleManifest(bundlePick: BundleSelection): Promise<Errorable<BundleManifest>> {
-    const jsonText = await bundleJSONText(bundlePick);
+    const bundleText = await readBundleText(bundlePick);
+    const jsonText = map(bundleText, jsonOnly);
     return map(jsonText, JSON.parse);
 }
 
-async function bundleJSONText(bundlePick: BundleSelection): Promise<Errorable<string>> {
-    if (bundlePick.kind === "folder") {
-        const jsonFile = bundleFilePath(bundlePick);
+async function readBundleText(bundlePick: BundleSelection): Promise<Errorable<string>> {
+    if (bundlePick.kind === "file") {
+        const bundleFile = bundleFilePath(bundlePick);
         try {
-            return { succeeded: true, result: await fs.readFile(jsonFile, 'utf8') };
+            const text = await fs.readFile(bundleFile, 'utf8');
+            return { succeeded: true, result: text };
         } catch (e) {
             return { succeeded: false, error: [`${e}`] };
         }
-        return { succeeded: true, result: await fs.readFile(jsonFile, 'utf8') };
     } else if (bundlePick.kind === "repo") {
         // TODO: probably stick the RepoBundle into RepoBundleSelection to save us parsing stuff out of the bundle ref string
         try {
@@ -84,8 +96,8 @@ async function bundleJSONText(bundlePick: BundleSelection): Promise<Errorable<st
     return cantHappen(bundlePick);
 }
 
-export function bundleFilePath(bundlePick: FolderBundleSelection) {
-    return path.join(bundlePick.path, "bundle.json");
+export function bundleFilePath(bundlePick: FileBundleSelection) {
+    return bundlePick.path;
 }
 
 function parseRepoBundle(bundle: string): RepoBundle {
@@ -96,6 +108,24 @@ function parseRepoBundle(bundle: string): RepoBundle {
     const name = tag.substring(0, versionDelimiter);
     const version = tag.substring(versionDelimiter + 1);
     return { repository, name, version };
+}
+
+function jsonOnly(source: string): string {
+    if (source.startsWith("-----BEGIN PGP SIGNED MESSAGE")) {
+        return stripSignature(source);
+    }
+    return source;
+}
+
+function stripSignature(source: string): string {
+    const lines = source.split('\n');
+    const messageStartLine = lines.findIndex((l) => l.startsWith("-----BEGIN PGP SIGNED MESSAGE"));
+    const sigStartLine = lines.findIndex((l) => l.startsWith("-----BEGIN PGP SIGNATURE"));
+    const messageLines = lines.slice(messageStartLine + 1, sigStartLine);
+    if (messageLines[0].startsWith("Hash:")) {
+        messageLines.shift();
+    }
+    return messageLines.join('\n').trim();
 }
 
 export function namespace(bundle: RepoBundle): string | undefined {
@@ -117,4 +147,20 @@ export function parseNameOnly(bundleName: string): string {
         return bundleName;
     }
     return bundleName.substring(sepIndex + 1);
+}
+
+const SAFE_NAME_ILLEGAL_CHARACTERS = /[^A-Za-z0-9_-]/g;
+
+export function suggestName(bundlePick: BundleSelection): string {
+    if (bundlePick.kind === 'file') {
+        const containingDir = path.basename(path.dirname(bundlePick.path));
+        return safeName(containingDir);
+    } else {
+        const baseName = parseNameOnly(bundlePick.kind);
+        return safeName(baseName);
+    }
+}
+
+function safeName(source: string): string {
+    return source.replace(SAFE_NAME_ILLEGAL_CHARACTERS, '-');
 }

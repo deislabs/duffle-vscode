@@ -6,7 +6,7 @@ import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
 import { succeeded, map, Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
-import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleFilePath } from '../utils/bundleselection';
+import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleFilePath, suggestName } from '../utils/bundleselection';
 
 export async function generateCredentials(target?: any): Promise<void> {
     if (!target) {
@@ -44,7 +44,8 @@ async function generateCredentialsForRepoBundle(bundle: RepoBundle): Promise<voi
 }
 
 async function generateCredentialsCore(bundlePick: BundleSelection): Promise<void> {
-    const generateResult = await generateCredentialsTo(bundlePick, bundlePick.label);
+    const credentialSetName = suggestName(bundlePick);
+    const generateResult = await generateCredentialsTo(bundlePick, credentialSetName);
 
     if (succeeded(generateResult)) {
         await refreshCredentialExplorer();
@@ -54,7 +55,7 @@ async function generateCredentialsCore(bundlePick: BundleSelection): Promise<voi
 }
 
 async function generateCredentialsTo(bundlePick: BundleSelection, credentialSetName: string): Promise<Errorable<string>> {
-    if (bundlePick.kind === 'folder') {
+    if (bundlePick.kind === 'file') {
         const bundlePath = bundleFilePath(bundlePick);
         const generateResult = await longRunning(`Duffle generating credentials for ${bundlePath}`,
             () => duffle.generateCredentialsForFile(shell.shell, bundlePath, credentialSetName)
