@@ -23,6 +23,7 @@
         "onCommand:duffle.push",
         "onCommand:duffle.install",
         "onCommand:duffle.generateCredentials",
+        "onCommand:duffle.refreshBundleExplorer",
         "onCommand:duffle.refreshRepoExplorer",
         "onCommand:duffle.refreshCredentialExplorer",
         "onCommand:duffle.credentialsetAdd",
@@ -85,6 +86,15 @@
                 "command": "duffle.generateCredentials",
                 "title": "Generate Bundle Credential Set",
                 "category": "Duffle"
+            },
+            {
+                "command": "duffle.refreshBundleExplorer",
+                "title": "Refresh Bundle Explorer",
+                "category": "Duffle",
+                "icon": {
+                    "light": "images/light/refresh.svg",
+                    "dark": "images/dark/refresh.svg"
+                }
             },
             {
                 "command": "duffle.refreshRepoExplorer",
@@ -151,6 +161,11 @@
                 {
                     "command": "duffle.refreshInstallationExplorer",
                     "when": "view == duffle.installationExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "duffle.refreshBundleExplorer",
+                    "when": "view == duffle.bundleExplorer",
                     "group": "navigation"
                 },
                 {
@@ -254,6 +269,10 @@
                     "command": "duffle.installationUninstall",
                     "when": "view == duffle.installationExplorer && viewItem = duffle.installation",
                     "group": "navigation"
+                },
+                {
+                    "command": "duffle.refreshBundleExplorer",
+                    "when": "view == duffle.bundleExplorer"
                 },
                 {
                     "command": "duffle.refreshRepoExplorer",

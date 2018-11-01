@@ -61,6 +61,10 @@ export async function refreshInstallationExplorer(): Promise<void> {
     await vscode.commands.executeCommand("duffle.refreshInstallationExplorer");
 }
 
+export async function refreshBundleExplorer(): Promise<void> {
+    await vscode.commands.executeCommand("duffle.refreshBundleExplorer");
+}
+
 export async function refreshRepoExplorer(): Promise<void> {
     await vscode.commands.executeCommand("duffle.refreshRepoExplorer");
 }

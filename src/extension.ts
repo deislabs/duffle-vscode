@@ -38,6 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.push', push),
         vscode.commands.registerCommand('duffle.install', install),
         vscode.commands.registerCommand('duffle.generateCredentials', generateCredentials),
+        vscode.commands.registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
         vscode.commands.registerCommand('duffle.refreshCredentialExplorer', () => credentialExplorer.refresh()),
         vscode.commands.registerCommand('duffle.credentialsetAdd', credentialSetAdd),

@@ -4,6 +4,7 @@ import * as duffle from '../../duffle/duffle';
 import { succeeded } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
 import { LocalBundle } from '../../duffle/duffle.objectmodel';
+import { iter, Group } from '../../utils/iterable';
 
 export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -15,11 +16,11 @@ export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNod
         return element.getTreeItem();
     }
 
-    getChildren(element?: any): vscode.ProviderResult<BundleExplorerNode[]> {
+    getChildren(element?: BundleExplorerNode): vscode.ProviderResult<BundleExplorerNode[]> {
         if (!element) {
-            return getBundleNodes(this.shell);
+            return getRootNodes(this.shell);
         }
-        return [];
+        return element.getChildren();
     }
 
     refresh(): void {
@@ -27,12 +28,32 @@ export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNod
     }
 }
 
-async function getBundleNodes(shell: Shell): Promise<BundleExplorerNode[]> {
+async function getRootNodes(shell: Shell): Promise<BundleExplorerNode[]> {
     const bundles = await duffle.bundles(shell);
     if (succeeded(bundles)) {
-        return bundles.result.map((b) => new LocalBundleNode(b));
+        const repos = iter(bundles.result).groupBy((b) => b.repository);
+        const topLevel = repos.groupBy((r) => prefix(r.key));
+        const unprefixed: BundleExplorerNode[] = topLevel
+            .filter((g) => !g.key)
+            .collect((g) => g.values)
+            .map((b) => new LocalRepoNode(b))
+            .toArray();
+        const prefixed: BundleExplorerNode[] = topLevel
+            .filter((g) => !!g.key)
+            .map((b) => new RepoContainerNode(b))
+            .toArray();
+        return prefixed.concat(unprefixed);
     }
     return [new ErrorNode(bundles.error[0])];
+}
+
+function prefix(name: string): string | undefined {
+    const sepIndex = name.indexOf('/');
+    if (sepIndex < 0) {
+        return undefined;
+    }
+    return name.substring(0, sepIndex);
+
 }
 
 interface BundleExplorerNode {
@@ -40,16 +61,30 @@ interface BundleExplorerNode {
     getTreeItem(): vscode.TreeItem;
 }
 
-class LocalBundleNode implements BundleExplorerNode {
-    constructor(private readonly bundle: LocalBundle) { }
+class LocalRepoNode implements BundleExplorerNode {
+    constructor(private readonly repo: Group<string, LocalBundle>) { }
 
     async getChildren(): Promise<BundleExplorerNode[]> {
         return [];
     }
 
     getTreeItem(): vscode.TreeItem {
-        const treeItem = new vscode.TreeItem(this.bundle.repository, vscode.TreeItemCollapsibleState.None);
-        treeItem.contextValue = "duffle.bundle";
+        const treeItem = new vscode.TreeItem(this.repo.key, vscode.TreeItemCollapsibleState.None);
+        treeItem.contextValue = "duffle.localRepo";
+        return treeItem;
+    }
+}
+
+class RepoContainerNode implements BundleExplorerNode {
+    constructor(private readonly container: Group<string | undefined /* it is never actually undefined */, Group<string, LocalBundle>>) { }
+
+    async getChildren(): Promise<BundleExplorerNode[]> {
+        return this.container.values.map((o) => new LocalRepoNode(o));
+    }
+
+    getTreeItem(): vscode.TreeItem {
+        const treeItem = new vscode.TreeItem(this.container.key!, vscode.TreeItemCollapsibleState.Collapsed);
+        treeItem.contextValue = "duffle.localRepoContainer";
         return treeItem;
     }
 }
