@@ -12,6 +12,11 @@ export interface RepoBundle {
     readonly version: string;
 }
 
+export interface LocalBundle {
+    readonly repository: string;
+    readonly tag: string;
+}
+
 export interface ParameterDefinition {
     readonly type: string;
     readonly allowedValues?: (number | string | boolean)[];

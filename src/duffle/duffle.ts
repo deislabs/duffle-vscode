@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as config from '../config/config';
 import { Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
-import { RepoBundle } from './duffle.objectmodel';
+import { RepoBundle, LocalBundle } from './duffle.objectmodel';
 import { sharedTerminal } from './sharedterminal';
 import * as pairs from '../utils/pairs';
 
@@ -70,6 +70,16 @@ export function search(sh: shell.Shell): Promise<Errorable<RepoBundle[]>> {
         return fromHeaderedTable<RepoBundle>(lines).map((b) => ({ repository: "hub.cnlabs.io", ...b }));
     }
     return invokeObj(sh, 'search', '', {}, parse);
+}
+
+export function bundles(sh: shell.Shell): Promise<Errorable<LocalBundle[]>> {
+    function parse(stdout: string): LocalBundle[] {
+        const lines = stdout.split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0);
+        return fromHeaderedTable<LocalBundle>(lines);
+    }
+    return invokeObj(sh, 'bundles', '', {}, parse);
 }
 
 export async function upgrade(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {

@@ -29,6 +29,7 @@
         "onCommand:duffle.credentialsetDelete",
         "onCommand:duffle.exposeParameter",
         "onView:duffle.installationExplorer",
+        "onView:duffle.bundleExplorer",
         "onView:duffle.repoExplorer",
         "onView:duffle.credentialExplorer",
         "onLanguage:json"
@@ -298,6 +299,10 @@
                 {
                     "id": "duffle.installationExplorer",
                     "name": "Installations"
+                },
+                {
+                    "id": "duffle.bundleExplorer",
+                    "name": "Bundles"
                 },
                 {
                     "id": "duffle.repoExplorer",
