@@ -9,7 +9,7 @@ import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
-import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshBundleExplorer, refreshCredentialExplorer, confirm } from './utils/host';
+import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshInstallationExplorer, refreshCredentialExplorer, confirm } from './utils/host';
 import { push } from './commands/push';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
@@ -27,10 +27,10 @@ export function activate(context: vscode.ExtensionContext) {
     const duffleTOMLCompletionProvider = new DuffleTOMLCompletionProvider();
 
     const subscriptions = [
-        vscode.commands.registerCommand('duffle.refreshBundleExplorer', () => installationExplorer.refresh()),
-        vscode.commands.registerCommand('duffle.bundleStatus', (node) => bundleStatus(node)),
-        vscode.commands.registerCommand('duffle.bundleUpgrade', (node) => bundleUpgrade(node)),
-        vscode.commands.registerCommand('duffle.bundleUninstall', (node) => bundleUninstall(node)),
+        vscode.commands.registerCommand('duffle.refreshInstallationExplorer', () => installationExplorer.refresh()),
+        vscode.commands.registerCommand('duffle.installationStatus', (node) => installationStatus(node)),
+        vscode.commands.registerCommand('duffle.installationUpgrade', (node) => installationUpgrade(node)),
+        vscode.commands.registerCommand('duffle.installationUninstall', (node) => installationUninstall(node)),
         vscode.commands.registerCommand('duffle.createProject', createProject),
         vscode.commands.registerCommand('duffle.build', build),
         vscode.commands.registerCommand('duffle.push', push),
@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.credentialsetAdd', credentialSetAdd),
         vscode.commands.registerCommand('duffle.credentialsetDelete', (node) => credentialsetDelete(node)),
         vscode.commands.registerCommand('duffle.exposeParameter', exposeParameter),
-        vscode.window.registerTreeDataProvider("duffle.bundleExplorer", installationExplorer),
+        vscode.window.registerTreeDataProvider("duffle.installationExplorer", installationExplorer),
         vscode.window.registerTreeDataProvider("duffle.repoExplorer", repoExplorer),
         vscode.window.registerTreeDataProvider("duffle.credentialExplorer", credentialExplorer),
         vscode.languages.registerCompletionItemProvider({ language: 'toml', pattern: '**/duffle.toml', scheme: 'file' }, duffleTOMLCompletionProvider)
@@ -108,28 +108,28 @@ async function build(): Promise<void> {
     await showDuffleResult('build', folderPath, buildResult);
 }
 
-function bundleStatus(bundle: InstallationRef) {
-    duffle.showStatus(bundle.bundleName);
+function installationStatus(bundle: InstallationRef) {
+    duffle.showStatus(bundle.installationName);
 }
 
-async function bundleUpgrade(bundle: InstallationRef): Promise<void> {
-    const upgradeResult = await longRunning(`Duffle upgrading ${bundle.bundleName}`,
-        () => duffle.upgrade(shell.shell, bundle.bundleName)
+async function installationUpgrade(bundle: InstallationRef): Promise<void> {
+    const upgradeResult = await longRunning(`Duffle upgrading ${bundle.installationName}`,
+        () => duffle.upgrade(shell.shell, bundle.installationName)
     );
 
-    await showDuffleResult('upgrade', bundle.bundleName, upgradeResult);
+    await showDuffleResult('upgrade', bundle.installationName, upgradeResult);
 }
 
-async function bundleUninstall(bundle: InstallationRef): Promise<void> {
-    const uninstallResult = await longRunning(`Duffle uninstalling ${bundle.bundleName}`,
-        () => duffle.uninstall(shell.shell, bundle.bundleName)
+async function installationUninstall(bundle: InstallationRef): Promise<void> {
+    const uninstallResult = await longRunning(`Duffle uninstalling ${bundle.installationName}`,
+        () => duffle.uninstall(shell.shell, bundle.installationName)
     );
 
     if (succeeded(uninstallResult)) {
-        await refreshBundleExplorer();
+        await refreshInstallationExplorer();
     }
 
-    await showDuffleResult('uninstall', bundle.bundleName, uninstallResult);
+    await showDuffleResult('uninstall', bundle.installationName, uninstallResult);
 }
 
 async function credentialsetDelete(credentialSet: CredentialSetRef): Promise<void> {

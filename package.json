@@ -14,10 +14,10 @@
     ],
     "activationEvents": [
         "onLanguage:toml",
-        "onCommand:duffle.refreshBundleExplorer",
-        "onCommand:duffle.bundleStatus",
-        "onCommand:duffle.bundleUpgrade",
-        "onCommand:duffle.bundleUninstall",
+        "onCommand:duffle.refreshInstallationExplorer",
+        "onCommand:duffle.installationStatus",
+        "onCommand:duffle.installationUpgrade",
+        "onCommand:duffle.installationUninstall",
         "onCommand:duffle.createProject",
         "onCommand:duffle.build",
         "onCommand:duffle.push",
@@ -28,7 +28,7 @@
         "onCommand:duffle.credentialsetAdd",
         "onCommand:duffle.credentialsetDelete",
         "onCommand:duffle.exposeParameter",
-        "onView:duffle.bundleExplorer",
+        "onView:duffle.installationExplorer",
         "onView:duffle.repoExplorer",
         "onView:duffle.credentialExplorer",
         "onLanguage:json"
@@ -37,8 +37,8 @@
     "contributes": {
         "commands": [
             {
-                "command": "duffle.refreshBundleExplorer",
-                "title": "Refresh Bundle Explorer",
+                "command": "duffle.refreshInstallationExplorer",
+                "title": "Refresh Installation Explorer",
                 "category": "Duffle",
                 "icon": {
                     "light": "images/light/refresh.svg",
@@ -46,17 +46,17 @@
                 }
             },
             {
-                "command": "duffle.bundleStatus",
+                "command": "duffle.installationStatus",
                 "title": "Status",
                 "category": "Duffle"
             },
             {
-                "command": "duffle.bundleUpgrade",
+                "command": "duffle.installationUpgrade",
                 "title": "Upgrade",
                 "category": "Duffle"
             },
             {
-                "command": "duffle.bundleUninstall",
+                "command": "duffle.installationUninstall",
                 "title": "Uninstall",
                 "category": "Duffle"
             },
@@ -148,8 +148,8 @@
         "menus": {
             "view/title": [
                 {
-                    "command": "duffle.refreshBundleExplorer",
-                    "when": "view == duffle.bundleExplorer",
+                    "command": "duffle.refreshInstallationExplorer",
+                    "when": "view == duffle.installationExplorer",
                     "group": "navigation"
                 },
                 {
@@ -170,18 +170,18 @@
             ],
             "view/item/context": [
                 {
-                    "command": "duffle.bundleStatus",
-                    "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
+                    "command": "duffle.installationStatus",
+                    "when": "view == duffle.installationExplorer && viewItem == duffle.installation",
                     "group": "0"
                 },
                 {
-                    "command": "duffle.bundleUpgrade",
-                    "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
+                    "command": "duffle.installationUpgrade",
+                    "when": "view == duffle.installationExplorer && viewItem == duffle.installation",
                     "group": "1"
                 },
                 {
-                    "command": "duffle.bundleUninstall",
-                    "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
+                    "command": "duffle.installationUninstall",
+                    "when": "view == duffle.installationExplorer && viewItem == duffle.installation",
                     "group": "2"
                 },
                 {
@@ -241,17 +241,17 @@
             ],
             "commandPalette": [
                 {
-                    "command": "duffle.refreshBundleExplorer",
-                    "when": "view == duffle.bundleExplorer"
+                    "command": "duffle.refreshInstallationExplorer",
+                    "when": "view == duffle.installationExplorer"
                 },
                 {
-                    "command": "duffle.bundleStatus",
-                    "when": "view == duffle.bundleExplorer && viewItem = duffle.bundle",
+                    "command": "duffle.installationStatus",
+                    "when": "view == duffle.installationExplorer && viewItem = duffle.installation",
                     "group": "navigation"
                 },
                 {
-                    "command": "duffle.bundleUninstall",
-                    "when": "view == duffle.bundleExplorer && viewItem = duffle.bundle",
+                    "command": "duffle.installationUninstall",
+                    "when": "view == duffle.installationExplorer && viewItem = duffle.installation",
                     "group": "navigation"
                 },
                 {
@@ -296,7 +296,7 @@
         "views": {
             "duffle": [
                 {
-                    "id": "duffle.bundleExplorer",
+                    "id": "duffle.installationExplorer",
                     "name": "Installations"
                 },
                 {

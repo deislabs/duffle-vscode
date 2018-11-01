@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { longRunning, showDuffleResult, refreshBundleExplorer } from '../utils/host';
+import { longRunning, showDuffleResult, refreshInstallationExplorer } from '../utils/host';
 import * as duffle from '../duffle/duffle';
 import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
 import { succeeded, map, Errorable, failed } from '../utils/errorable';
@@ -71,7 +71,7 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
     const installResult = await installTo(bundlePick, name, parameterValues.value, credentialSet.value);
 
     if (succeeded(installResult)) {
-        await refreshBundleExplorer();
+        await refreshInstallationExplorer();
     }
 
     await showDuffleResult('install', (bundleId) => bundleId, installResult);

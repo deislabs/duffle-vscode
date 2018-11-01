@@ -1,5 +1,5 @@
 export interface InstallationRef {
-    readonly bundleName: string;
+    readonly installationName: string;
 }
 
 export interface RepoBundleRef {

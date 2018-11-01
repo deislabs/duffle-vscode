@@ -17,7 +17,7 @@ export class InstallationExplorer implements vscode.TreeDataProvider<Installatio
 
     getChildren(element?: any): vscode.ProviderResult<InstallationExplorerNode[]> {
         if (!element) {
-            return getBundleNodes(this.shell);
+            return getInstallationNodes(this.shell);
         }
         return [];
     }
@@ -27,7 +27,7 @@ export class InstallationExplorer implements vscode.TreeDataProvider<Installatio
     }
 }
 
-async function getBundleNodes(shell: Shell): Promise<InstallationExplorerNode[]> {
+async function getInstallationNodes(shell: Shell): Promise<InstallationExplorerNode[]> {
     const lr = await duffle.list(shell);
     if (succeeded(lr)) {
         return lr.result.map((n) => new InstallationNode(n));
@@ -41,15 +41,15 @@ interface InstallationExplorerNode {
 }
 
 class InstallationNode implements InstallationExplorerNode, InstallationRef {
-    constructor(readonly bundleName: string) { }
+    constructor(readonly installationName: string) { }
 
     async getChildren(): Promise<InstallationExplorerNode[]> {
         return [];
     }
 
     getTreeItem(): vscode.TreeItem {
-        const treeItem = new vscode.TreeItem(this.bundleName, vscode.TreeItemCollapsibleState.None);
-        treeItem.contextValue = "duffle.bundle";
+        const treeItem = new vscode.TreeItem(this.installationName, vscode.TreeItemCollapsibleState.None);
+        treeItem.contextValue = "duffle.installation";
         return treeItem;
     }
 }

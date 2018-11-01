@@ -57,8 +57,8 @@ export async function confirm(text: string, confirmLabel: string): Promise<boole
     return choice === confirmLabel;
 }
 
-export async function refreshBundleExplorer(): Promise<void> {
-    await vscode.commands.executeCommand("duffle.refreshBundleExplorer");
+export async function refreshInstallationExplorer(): Promise<void> {
+    await vscode.commands.executeCommand("duffle.refreshInstallationExplorer");
 }
 
 export async function refreshRepoExplorer(): Promise<void> {
