@@ -10,7 +10,7 @@ import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
-import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshInstallationExplorer, refreshCredentialExplorer, confirm } from './utils/host';
+import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshInstallationExplorer, refreshCredentialExplorer, confirm, refreshBundleExplorer } from './utils/host';
 import { push } from './commands/push';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
@@ -108,6 +108,10 @@ async function build(): Promise<void> {
     const buildResult = await longRunning(`Duffle building ${folderPath}`,
         () => duffle.build(shell.shell, folderPath)
     );
+
+    if (succeeded(buildResult)) {
+        refreshBundleExplorer();
+    }
 
     await showDuffleResult('build', folderPath, buildResult);
 }
