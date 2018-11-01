@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as request from 'request-promise-native';
 
 import { selectQuickPick } from './host';
-import { RepoBundle, BundleManifest } from '../duffle/duffle.objectmodel';
+import { RepoBundle, BundleManifest, LocalBundle } from '../duffle/duffle.objectmodel';
 import { cantHappen } from './never';
 import { fs } from './fs';
 import { Errorable, map } from './errorable';
@@ -21,7 +21,13 @@ export interface RepoBundleSelection {
     readonly bundle: string;
 }
 
-export type BundleSelection = FileBundleSelection | RepoBundleSelection;
+export interface LocalBundleSelection {
+    readonly kind: 'local';
+    readonly label: string;
+    readonly bundle: string;
+}
+
+export type BundleSelection = FileBundleSelection | RepoBundleSelection | LocalBundleSelection;
 
 export async function promptBundle(prompt: string): Promise<BundleSelection | undefined> {
     const bundles = await workspaceBundleFiles();
@@ -67,6 +73,14 @@ export function repoBundleSelection(bundle: RepoBundle): BundleSelection {
     };
 }
 
+export function localBundleSelection(bundle: LocalBundle): BundleSelection {
+    return {
+        kind: 'local',
+        label: bundle.repository,
+        bundle: `${bundle.repository}:${bundle.tag}`
+    };
+}
+
 export async function bundleManifest(bundlePick: BundleSelection): Promise<Errorable<BundleManifest>> {
     const bundleText = await readBundleText(bundlePick);
     const jsonText = map(bundleText, jsonOnly);
@@ -92,11 +106,21 @@ async function readBundleText(bundlePick: BundleSelection): Promise<Errorable<st
         } catch (e) {
             return { succeeded: false, error: [`${e}`] };
         }
+    } else if (bundlePick.kind === "local") {
+        const jsonFile = bundleFilePath(bundlePick);
+        try {
+            return { succeeded: true, result: await fs.readFile(jsonFile, 'utf8') };
+        } catch (e) {
+            return { succeeded: false, error: [`${e}`] };
+        }
     }
     return cantHappen(bundlePick);
 }
 
-export function bundleFilePath(bundlePick: FileBundleSelection) {
+export function bundleFilePath(bundlePick: FileBundleSelection | LocalBundleSelection) {
+    if (bundlePick.kind === 'local') {
+        return '/* TODO: resolve path using Fisherware */';
+    }
     return bundlePick.path;
 }
 

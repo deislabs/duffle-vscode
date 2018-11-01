@@ -68,6 +68,11 @@ async function generateCredentialsTo(bundlePick: BundleSelection, credentialSetN
             () => duffle.generateCredentialsForBundle(shell.shell, bundlePick.bundle, credentialSetName)
         );
         return map(installResult, (_) => bundlePick.bundle);
+    } else if (bundlePick.kind === 'local') {
+        const installResult = await longRunning(`Duffle generating credentials for ${bundlePick.bundle}`,
+            () => duffle.generateCredentialsForBundle(shell.shell, bundlePick.bundle, credentialSetName)
+        );
+        return map(installResult, (_) => bundlePick.bundle);
     }
     return cantHappen(bundlePick);
 }

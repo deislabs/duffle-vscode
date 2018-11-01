@@ -36,7 +36,7 @@ async function pushFile(file: vscode.Uri): Promise<void> {
 }
 
 async function pushCore(bundlePick: BundleSelection): Promise<void> {
-    const name = await promptRepo(shell.shell, `Push bundle in ${bundlePick.label} to...`);
+    const name = bundlePick.kind === 'file' ? await promptRepo(shell.shell, `Push bundle in ${bundlePick.label} to...`) : 'UNUSED';
     if (!name) {
         return;
     }
@@ -58,8 +58,12 @@ async function pushTo(bundlePick: BundleSelection, repo: string): Promise<Errora
         );
         return map(pushResult, (_) => bundlePath);
     } else if (bundlePick.kind === 'repo') {
-        // TODO: we will need to do this for the local repo I think
         return { succeeded: false, error: ['Internal error - cannot push bundles already in repos'] };
+    } else if (bundlePick.kind === 'local') {
+        const pushResult = await longRunning(`Duffle push ${bundlePick.bundle}`,
+            () => duffle.pushBundle(shell.shell, bundlePick.bundle)
+        );
+        return map(pushResult, (_) => bundlePick.bundle);
     }
     return cantHappen(bundlePick);
 }

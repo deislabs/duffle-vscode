@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as duffle from '../../duffle/duffle';
 import { succeeded } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
-import { LocalBundle } from '../../duffle/duffle.objectmodel';
+import { LocalBundle, LocalBundleRef } from '../../duffle/duffle.objectmodel';
 import { iter, Group, Enumerable } from '../../utils/iterable';
 
 export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNode> {
@@ -67,31 +67,41 @@ interface BundleExplorerNode {
     getTreeItem(): vscode.TreeItem;
 }
 
-class LocalRepoNode implements BundleExplorerNode {
-    constructor(private readonly repo: Group<string, LocalBundle>) { }
+class LocalRepoNode implements BundleExplorerNode, LocalBundleRef {
+    constructor(private readonly repo: Group<string, LocalBundle>) {
+        this.bundle = repo.values.find((b) => b.tag === 'latest') || { repository: '', tag: '' };
+    }
+
+    readonly bundleLocation = 'local';
+
+    readonly bundle: LocalBundle;
 
     async getChildren(): Promise<BundleExplorerNode[]> {
-        return this.repo.values.map((v) => new LocalRepoVersionNode(v.tag));
+        return this.repo.values.map((v) => new LocalRepoVersionNode(v));
     }
 
     getTreeItem(): vscode.TreeItem {
         // TODO: could do with distinctive bundle-y icon here
         const treeItem = new vscode.TreeItem(this.repo.key, vscode.TreeItemCollapsibleState.Collapsed);
-        treeItem.contextValue = "duffle.localRepo";
+        if (this.bundle.tag === 'latest') {
+            treeItem.contextValue = "duffle.localBundle";
+        }
         return treeItem;
     }
 }
 
-class LocalRepoVersionNode implements BundleExplorerNode {
-    constructor(private readonly version: string) { }
+class LocalRepoVersionNode implements BundleExplorerNode, LocalBundleRef {
+    constructor(readonly bundle: LocalBundle) { }
+
+    readonly bundleLocation = 'local';
 
     async getChildren(): Promise<BundleExplorerNode[]> {
         return [];
     }
 
     getTreeItem(): vscode.TreeItem {
-        const treeItem = new vscode.TreeItem(this.version, vscode.TreeItemCollapsibleState.None);
-        treeItem.contextValue = "duffle.localRepoVersion";
+        const treeItem = new vscode.TreeItem(this.bundle.tag, vscode.TreeItemCollapsibleState.None);
+        treeItem.contextValue = "duffle.localBundle";
         return treeItem;
     }
 }

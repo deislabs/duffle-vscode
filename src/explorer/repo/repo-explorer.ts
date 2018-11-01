@@ -89,6 +89,8 @@ class RepoNamespaceNode implements RepoExplorerNode {
 class RepoBundleNode implements RepoExplorerNode, RepoBundleRef {
     constructor(readonly bundle: RepoBundle) { }
 
+    readonly bundleLocation = 'remote';
+
     async getChildren(shell: Shell): Promise<RepoExplorerNode[]> {
         return [];
     }

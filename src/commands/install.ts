@@ -2,11 +2,11 @@ import * as vscode from 'vscode';
 
 import { longRunning, showDuffleResult, refreshInstallationExplorer } from '../utils/host';
 import * as duffle from '../duffle/duffle';
-import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
+import { RepoBundle, RepoBundleRef, LocalBundleRef, LocalBundle } from '../duffle/duffle.objectmodel';
 import { succeeded, map, Errorable, failed } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
-import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleManifest, bundleFilePath, suggestName } from '../utils/bundleselection';
+import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleManifest, bundleFilePath, suggestName, localBundleSelection } from '../utils/bundleselection';
 import { promptForParameters } from '../utils/parameters';
 import { promptForCredentials } from '../utils/credentials';
 
@@ -17,8 +17,11 @@ export async function install(target?: any): Promise<void> {
     if (target.scheme) {
         return await installFile(target as vscode.Uri);
     }
-    if (target.bundle) {
+    if (target.bundleLocation === 'remote') {
         return await installRepoBundle((target as RepoBundleRef).bundle);
+    }
+    if (target.bundleLocation === 'local') {
+        return await installLocalBundle((target as LocalBundleRef).bundle);
     }
     await vscode.window.showErrorMessage("Internal error: unexpected command target");
 }
@@ -43,6 +46,10 @@ async function installFile(file: vscode.Uri): Promise<void> {
 
 async function installRepoBundle(bundle: RepoBundle): Promise<void> {
     return await installCore(repoBundleSelection(bundle));
+}
+
+async function installLocalBundle(bundle: LocalBundle): Promise<void> {
+    return await installCore(localBundleSelection(bundle));
 }
 
 async function installCore(bundlePick: BundleSelection): Promise<void> {
@@ -85,6 +92,11 @@ async function installTo(bundlePick: BundleSelection, name: string, params: { [k
         );
         return map(installResult, (_) => bundlePath);
     } else if (bundlePick.kind === 'repo') {
+        const installResult = await longRunning(`Duffle installing ${bundlePick.bundle}`,
+            () => duffle.installBundle(shell.shell, bundlePick.bundle, name, params, credentialSet)
+        );
+        return map(installResult, (_) => bundlePick.bundle);
+    } else if (bundlePick.kind === 'local') {
         const installResult = await longRunning(`Duffle installing ${bundlePick.bundle}`,
             () => duffle.installBundle(shell.shell, bundlePick.bundle, name, params, credentialSet)
         );

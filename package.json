@@ -211,6 +211,16 @@
                     "group": "1"
                 },
                 {
+                    "command": "duffle.install",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
+                    "group": "1"
+                },
+                {
+                    "command": "duffle.generateCredentials",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
+                    "group": "1"
+                },
+                {
                     "command": "duffle.credentialsetDelete",
                     "when": "view == duffle.credentialExplorer && viewItem == duffle.credentialset",
                     "group": "1"
