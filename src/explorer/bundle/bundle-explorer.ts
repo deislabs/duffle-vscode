@@ -37,6 +37,8 @@ async function getRootNodes(shell: Shell): Promise<BundleExplorerNode[]> {
     return [new ErrorNode(bundles.error[0])];
 }
 
+// TODO: pretty sure a lot of this should be unified with repo-explorer.ts
+
 function stratifyByPrefix(groups: Enumerable<Group<string, LocalBundle>>): BundleExplorerNode[] {
     const topLevel = groups.groupBy((r) => prefix(r.key));
     const unprefixed: BundleExplorerNode[] = topLevel
