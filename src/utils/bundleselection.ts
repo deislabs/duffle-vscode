@@ -193,7 +193,7 @@ export function suggestName(bundlePick: BundleSelection): string {
         const containingDir = path.basename(path.dirname(bundlePick.path));
         return safeName(containingDir);
     } else {
-        const baseName = parseNameOnly(bundlePick.kind);
+        const baseName = parseNameOnly(bundlePick.label);
         return safeName(baseName);
     }
 }
