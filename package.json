@@ -221,6 +221,11 @@
                     "group": "1"
                 },
                 {
+                    "command": "duffle.push",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
+                    "group": "2"
+                },
+                {
                     "command": "duffle.credentialsetDelete",
                     "when": "view == duffle.credentialExplorer && viewItem == duffle.credentialset",
                     "group": "1"

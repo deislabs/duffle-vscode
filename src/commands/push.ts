@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 
-import { promptBundle, fileBundleSelection, BundleSelection, bundleFilePath } from '../utils/bundleselection';
+import { promptBundle, fileBundleSelection, BundleSelection, bundleFilePath, localBundleSelection } from '../utils/bundleselection';
 import { showDuffleResult, refreshRepoExplorer, longRunning } from '../utils/host';
 import { succeeded, Errorable, map, failed } from '../utils/errorable';
 import { cantHappen } from '../utils/never';
 import * as duffle from '../duffle/duffle';
 import * as shell from '../utils/shell';
+import { LocalBundleRef, LocalBundle } from '../duffle/duffle.objectmodel';
 
 export async function push(target?: any): Promise<void> {
     if (!target) {
@@ -13,6 +14,9 @@ export async function push(target?: any): Promise<void> {
     }
     if (target.scheme) {
         return await pushFile(target as vscode.Uri);
+    }
+    if (target.bundleLocation === 'local') {
+        return await pushLocalBundle((target as LocalBundleRef).bundle);
     }
     await vscode.window.showErrorMessage("Internal error: unexpected command target");
 }
@@ -33,6 +37,10 @@ async function pushFile(file: vscode.Uri): Promise<void> {
         return;
     }
     return await pushCore(fileBundleSelection(file));
+}
+
+async function pushLocalBundle(bundle: LocalBundle): Promise<void> {
+    return await pushCore(localBundleSelection(bundle));
 }
 
 async function pushCore(bundlePick: BundleSelection): Promise<void> {

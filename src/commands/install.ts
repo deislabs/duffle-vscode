@@ -91,12 +91,7 @@ async function installTo(bundlePick: BundleSelection, name: string, params: { [k
             () => duffle.installFile(shell.shell, bundlePath, name, params, credentialSet)
         );
         return map(installResult, (_) => bundlePath);
-    } else if (bundlePick.kind === 'repo') {
-        const installResult = await longRunning(`Duffle installing ${bundlePick.bundle}`,
-            () => duffle.installBundle(shell.shell, bundlePick.bundle, name, params, credentialSet)
-        );
-        return map(installResult, (_) => bundlePick.bundle);
-    } else if (bundlePick.kind === 'local') {
+    } else if (bundlePick.kind === 'repo' || bundlePick.kind === 'local') {
         const installResult = await longRunning(`Duffle installing ${bundlePick.bundle}`,
             () => duffle.installBundle(shell.shell, bundlePick.bundle, name, params, credentialSet)
         );

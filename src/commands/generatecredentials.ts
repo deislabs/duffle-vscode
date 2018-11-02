@@ -2,12 +2,12 @@ import * as vscode from 'vscode';
 
 import { longRunning, showDuffleResult, refreshCredentialExplorer } from '../utils/host';
 import * as duffle from '../duffle/duffle';
-import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
+import { RepoBundle, RepoBundleRef, LocalBundleRef, LocalBundle } from '../duffle/duffle.objectmodel';
 import * as dufflepaths from '../duffle/duffle.paths';
 import { succeeded, map, Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
-import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleFilePath, suggestName } from '../utils/bundleselection';
+import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleFilePath, suggestName, localBundleSelection } from '../utils/bundleselection';
 
 export async function generateCredentials(target?: any): Promise<void> {
     if (!target) {
@@ -16,8 +16,11 @@ export async function generateCredentials(target?: any): Promise<void> {
     if (target.scheme) {
         return await generateCredentialsForFile(target as vscode.Uri);
     }
-    if (target.bundle) {
+    if (target.bundleLocation === 'repo') {
         return await generateCredentialsForRepoBundle((target as RepoBundleRef).bundle);
+    }
+    if (target.bundleLocation === 'local') {
+        return await generateCredentialsForLocalBundle((target as LocalBundleRef).bundle);
     }
     await vscode.window.showErrorMessage("Internal error: unexpected command target");
 }
@@ -44,6 +47,10 @@ async function generateCredentialsForRepoBundle(bundle: RepoBundle): Promise<voi
     return await generateCredentialsCore(repoBundleSelection(bundle));
 }
 
+async function generateCredentialsForLocalBundle(bundle: LocalBundle): Promise<void> {
+    return await generateCredentialsCore(localBundleSelection(bundle));
+}
+
 async function generateCredentialsCore(bundlePick: BundleSelection): Promise<void> {
     const credentialSetName = suggestName(bundlePick);
     const generateResult = await generateCredentialsTo(bundlePick, credentialSetName);
@@ -63,12 +70,7 @@ async function generateCredentialsTo(bundlePick: BundleSelection, credentialSetN
             () => duffle.generateCredentialsForFile(shell.shell, bundlePath, credentialSetName)
         );
         return map(generateResult, (_) => bundlePath);
-    } else if (bundlePick.kind === 'repo') {
-        const installResult = await longRunning(`Duffle generating credentials for ${bundlePick.bundle}`,
-            () => duffle.generateCredentialsForBundle(shell.shell, bundlePick.bundle, credentialSetName)
-        );
-        return map(installResult, (_) => bundlePick.bundle);
-    } else if (bundlePick.kind === 'local') {
+    } else if (bundlePick.kind === 'repo' || bundlePick.kind === 'local') {
         const installResult = await longRunning(`Duffle generating credentials for ${bundlePick.bundle}`,
             () => duffle.generateCredentialsForBundle(shell.shell, bundlePick.bundle, credentialSetName)
         );

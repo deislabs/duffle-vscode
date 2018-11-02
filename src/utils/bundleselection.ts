@@ -7,6 +7,7 @@ import { RepoBundle, BundleManifest, LocalBundle } from '../duffle/duffle.object
 import { cantHappen } from './never';
 import { fs } from './fs';
 import { Errorable, map } from './errorable';
+import { localBundlePath } from '../duffle/duffle.paths';
 
 export interface FileBundleSelection {
     readonly kind: 'file';
@@ -90,12 +91,7 @@ export async function bundleManifest(bundlePick: BundleSelection): Promise<Error
 async function readBundleText(bundlePick: BundleSelection): Promise<Errorable<string>> {
     if (bundlePick.kind === "file") {
         const bundleFile = bundleFilePath(bundlePick);
-        try {
-            const text = await fs.readFile(bundleFile, 'utf8');
-            return { succeeded: true, result: text };
-        } catch (e) {
-            return { succeeded: false, error: [`${e}`] };
-        }
+        return await tryReadFile(bundleFile);
     } else if (bundlePick.kind === "repo") {
         // TODO: probably stick the RepoBundle into RepoBundleSelection to save us parsing stuff out of the bundle ref string
         try {
@@ -107,21 +103,31 @@ async function readBundleText(bundlePick: BundleSelection): Promise<Errorable<st
             return { succeeded: false, error: [`${e}`] };
         }
     } else if (bundlePick.kind === "local") {
-        const jsonFile = bundleFilePath(bundlePick);
-        try {
-            return { succeeded: true, result: await fs.readFile(jsonFile, 'utf8') };
-        } catch (e) {
-            return { succeeded: false, error: [`${e}`] };
+        const bundleFile = await resolveLocalBundlePath(bundlePick);
+        if (bundleFile.succeeded) {
+            return await tryReadFile(bundleFile.result);
         }
+        return bundleFile;
     }
     return cantHappen(bundlePick);
 }
 
-export function bundleFilePath(bundlePick: FileBundleSelection | LocalBundleSelection) {
-    if (bundlePick.kind === 'local') {
-        return '/* TODO: resolve path using Fisherware */';
+async function tryReadFile(bundleFile: string): Promise<Errorable<string>> {
+    try {
+        const text = await fs.readFile(bundleFile, 'utf8');
+        return { succeeded: true, result: text };
+    } catch (e) {
+        return { succeeded: false, error: [`${e}`] };
     }
+}
+
+export function bundleFilePath(bundlePick: FileBundleSelection): string {
     return bundlePick.path;
+}
+
+async function resolveLocalBundlePath(bundlePick: LocalBundleSelection): Promise<Errorable<string>> {
+    const bundleInfo = parseLocalBundle(bundlePick.bundle);
+    return await localBundlePath(bundleInfo.repository, bundleInfo.tag);
 }
 
 function parseRepoBundle(bundle: string): RepoBundle {
@@ -132,6 +138,13 @@ function parseRepoBundle(bundle: string): RepoBundle {
     const name = tag.substring(0, versionDelimiter);
     const version = tag.substring(versionDelimiter + 1);
     return { repository, name, version };
+}
+
+function parseLocalBundle(bundle: string): LocalBundle {
+    const versionDelimiter = bundle.indexOf(':');
+    const repository = bundle.substring(0, versionDelimiter);
+    const tag = bundle.substring(versionDelimiter + 1);
+    return { repository, tag };
 }
 
 function jsonOnly(source: string): string {
