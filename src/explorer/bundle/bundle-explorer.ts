@@ -31,7 +31,7 @@ export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNod
 async function getRootNodes(shell: Shell): Promise<BundleExplorerNode[]> {
     const bundles = await duffle.bundles(shell);
     if (succeeded(bundles)) {
-        const repos = iter(bundles.result).groupBy((b) => b.repository);
+        const repos = iter(bundles.result).groupBy((b) => b.name);
         return stratifyByPrefix(repos);
     }
     return [new ErrorNode(bundles.error[0])];
@@ -69,7 +69,7 @@ interface BundleExplorerNode {
 
 class LocalRepoNode implements BundleExplorerNode, LocalBundleRef {
     constructor(private readonly repo: Group<string, LocalBundle>) {
-        this.bundle = repo.values.find((b) => b.tag === 'latest') || { repository: '', tag: '' };
+        this.bundle = repo.values.find((b) => b.version === 'latest') || { name: '', version: '' };
     }
 
     readonly bundleLocation = 'local';
@@ -83,7 +83,7 @@ class LocalRepoNode implements BundleExplorerNode, LocalBundleRef {
     getTreeItem(): vscode.TreeItem {
         // TODO: could do with distinctive bundle-y icon here
         const treeItem = new vscode.TreeItem(this.repo.key, vscode.TreeItemCollapsibleState.Collapsed);
-        if (this.bundle.tag === 'latest') {
+        if (this.bundle.version === 'latest') {
             treeItem.contextValue = "duffle.localBundle";
         }
         return treeItem;
@@ -100,7 +100,7 @@ class LocalRepoVersionNode implements BundleExplorerNode, LocalBundleRef {
     }
 
     getTreeItem(): vscode.TreeItem {
-        const treeItem = new vscode.TreeItem(this.bundle.tag, vscode.TreeItemCollapsibleState.None);
+        const treeItem = new vscode.TreeItem(this.bundle.version, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = "duffle.localBundle";
         return treeItem;
     }

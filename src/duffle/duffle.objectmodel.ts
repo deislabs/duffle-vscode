@@ -21,8 +21,9 @@ export interface RepoBundle {
 }
 
 export interface LocalBundle {
-    readonly repository: string;
-    readonly tag: string;
+    readonly name: string;
+    readonly version: string;
+    readonly digest?: string;  // always present in CLI, but sometimes we need to cons up one of these in code, and since we never use the digest property...
 }
 
 export interface ParameterDefinition {

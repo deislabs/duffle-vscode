@@ -77,8 +77,8 @@ export function repoBundleSelection(bundle: RepoBundle): BundleSelection {
 export function localBundleSelection(bundle: LocalBundle): BundleSelection {
     return {
         kind: 'local',
-        label: bundle.repository,
-        bundle: `${bundle.repository}:${bundle.tag}`
+        label: bundle.name,
+        bundle: `${bundle.name}:${bundle.version}`
     };
 }
 
@@ -127,7 +127,7 @@ export function bundleFilePath(bundlePick: FileBundleSelection): string {
 
 async function resolveLocalBundlePath(bundlePick: LocalBundleSelection): Promise<Errorable<string>> {
     const bundleInfo = parseLocalBundle(bundlePick.bundle);
-    return await localBundlePath(bundleInfo.repository, bundleInfo.tag);
+    return await localBundlePath(bundleInfo.name, bundleInfo.version);
 }
 
 function parseRepoBundle(bundle: string): RepoBundle {
@@ -142,9 +142,9 @@ function parseRepoBundle(bundle: string): RepoBundle {
 
 function parseLocalBundle(bundle: string): LocalBundle {
     const versionDelimiter = bundle.indexOf(':');
-    const repository = bundle.substring(0, versionDelimiter);
-    const tag = bundle.substring(versionDelimiter + 1);
-    return { repository, tag };
+    const name = bundle.substring(0, versionDelimiter);
+    const version = bundle.substring(versionDelimiter + 1);
+    return { name, version };
 }
 
 function jsonOnly(source: string): string {
