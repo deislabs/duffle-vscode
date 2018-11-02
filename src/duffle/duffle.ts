@@ -90,11 +90,6 @@ export async function uninstall(sh: shell.Shell, bundleName: string): Promise<Er
     return await invokeObj(sh, 'uninstall', bundleName, {}, (s) => null);
 }
 
-// TODO: this needs to be removed once the transition is complete
-export async function pushFile(sh: shell.Shell, filePath: string, repo: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'push', `-f "${filePath}" --repo ${repo}`, {}, (s) => null);
-}
-
 export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
     return await invokeObj(sh, 'push', `${bundleName}`, {}, (s) => null);
 }

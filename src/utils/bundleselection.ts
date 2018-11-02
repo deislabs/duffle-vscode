@@ -6,8 +6,10 @@ import { selectQuickPick } from './host';
 import { RepoBundle, BundleManifest, LocalBundle } from '../duffle/duffle.objectmodel';
 import { cantHappen } from './never';
 import { fs } from './fs';
-import { Errorable, map } from './errorable';
+import { Errorable, map, failed } from './errorable';
+import * as duffle from '../duffle/duffle';
 import { localBundlePath } from '../duffle/duffle.paths';
+import { shell } from './shell';
 
 export interface FileBundleSelection {
     readonly kind: 'file';
@@ -30,7 +32,7 @@ export interface LocalBundleSelection {
 
 export type BundleSelection = FileBundleSelection | RepoBundleSelection | LocalBundleSelection;
 
-export async function promptBundle(prompt: string): Promise<BundleSelection | undefined> {
+export async function promptBundleFile(prompt: string): Promise<BundleSelection | undefined> {
     const bundles = await workspaceBundleFiles();
     if (!bundles || bundles.length === 0) {
         await vscode.window.showErrorMessage("This command requires a bundle file in the current workspace.");
@@ -39,12 +41,7 @@ export async function promptBundle(prompt: string): Promise<BundleSelection | un
 
     const bundleQuickPicks = bundles.map(fileBundleSelection);
 
-    const bundlePick = await selectQuickPick(bundleQuickPicks, { placeHolder: prompt });
-    if (!bundlePick) {
-        return undefined;
-    }
-
-    return bundlePick;
+    return await promptBundle(prompt, bundleQuickPicks);
 }
 
 async function workspaceBundleFiles(): Promise<vscode.Uri[]> {
@@ -52,6 +49,32 @@ async function workspaceBundleFiles(): Promise<vscode.Uri[]> {
     const signedBundles = vscode.workspace.findFiles('**/bundle.cnab');
     const bundles = ((await unsignedBundles) || []).concat((await signedBundles) || []);
     return bundles;
+}
+
+export async function promptLocalBundle(prompt: string): Promise<BundleSelection | undefined> {
+    const bundles = await duffle.bundles(shell);
+    if (failed(bundles)) {
+        await vscode.window.showErrorMessage(`Can't get the list of bundles: ${bundles.error[0]}`);
+        return undefined;
+    }
+
+    if (bundles.result.length === 0) {
+        await vscode.window.showErrorMessage("This command requires at least one bundle in your local store.");
+        return undefined;
+    }
+
+    const bundleQuickPicks = bundles.result.map(localBundleSelection);
+
+    return await promptBundle(prompt, bundleQuickPicks);
+}
+
+async function promptBundle(prompt: string, bundleQuickPicks: BundleSelection[]): Promise<BundleSelection | undefined> {
+    const bundlePick = await selectQuickPick(bundleQuickPicks, { placeHolder: prompt });
+    if (!bundlePick) {
+        return undefined;
+    }
+
+    return bundlePick;
 }
 
 export function fileBundleSelection(bundleFile: vscode.Uri): BundleSelection {

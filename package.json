@@ -251,16 +251,6 @@
                     "command": "duffle.generateCredentials",
                     "when": "resourceFilename == bundle.cnab",
                     "group": "9"
-                },
-                {
-                    "command": "duffle.push",
-                    "when": "resourceFilename == bundle.json",
-                    "group": "9"
-                },
-                {
-                    "command": "duffle.push",
-                    "when": "resourceFilename == bundle.cnab",
-                    "group": "9"
                 }
             ],
             "editor/context": [
