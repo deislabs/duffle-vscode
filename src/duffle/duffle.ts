@@ -149,9 +149,9 @@ export async function deleteCredentialSet(sh: shell.Shell, credentialSetName: st
 }
 
 export async function generateCredentialsForFile(sh: shell.Shell, bundleFilePath: string, name: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'credentials generate', `${name} -f "${bundleFilePath}"`, {}, (s) => null);
+    return await invokeObj(sh, 'credentials generate', `${name} -f "${bundleFilePath}" -q`, {}, (s) => null);
 }
 
 export async function generateCredentialsForBundle(sh: shell.Shell, bundleName: string, name: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'credentials generate', `${name} ${bundleName}`, {}, (s) => null);
+    return await invokeObj(sh, 'credentials generate', `${name} ${bundleName} -q`, {}, (s) => null);
 }

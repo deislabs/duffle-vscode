@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { longRunning, showDuffleResult, refreshCredentialExplorer } from '../utils/host';
 import * as duffle from '../duffle/duffle';
 import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
+import * as dufflepaths from '../duffle/duffle.paths';
 import { succeeded, map, Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
@@ -49,6 +50,7 @@ async function generateCredentialsCore(bundlePick: BundleSelection): Promise<voi
 
     if (succeeded(generateResult)) {
         await refreshCredentialExplorer();
+        await openCredentialSet(credentialSetName);
     }
 
     await showDuffleResult('generate credentials', (bundleId) => bundleId, generateResult);
@@ -68,4 +70,10 @@ async function generateCredentialsTo(bundlePick: BundleSelection, credentialSetN
         return map(installResult, (_) => bundlePick.bundle);
     }
     return cantHappen(bundlePick);
+}
+
+async function openCredentialSet(credentialSetName: string): Promise<void> {
+    const filePath = dufflepaths.credentialSetPath(credentialSetName);
+    const fileUri = vscode.Uri.file(filePath);
+    await vscode.commands.executeCommand("vscode.open", fileUri);
 }
