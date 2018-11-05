@@ -17,7 +17,7 @@ export async function install(target?: any): Promise<void> {
     if (target.scheme) {
         return await installFile(target as vscode.Uri);
     }
-    if (target.bundleLocation === 'remote') {
+    if (target.bundleLocation === 'repo') {
         return await installRepoBundle((target as RepoBundleRef).bundle);
     }
     if (target.bundleLocation === 'local') {

@@ -3,7 +3,7 @@ export interface InstallationRef {
 }
 
 export interface RepoBundleRef {
-    readonly bundleLocation: 'remote';
+    readonly bundleLocation: 'repo';
     readonly bundle: RepoBundle;
 }
 
@@ -13,6 +13,11 @@ export interface LocalBundleRef {
 }
 
 export type BundleRef = RepoBundleRef | LocalBundleRef;
+
+export interface RepoIndex {
+    readonly apiVersion: string;
+    readonly entries: { [key: string]: RepoBundle[] };
+}
 
 export interface RepoBundle {
     readonly name: string;
