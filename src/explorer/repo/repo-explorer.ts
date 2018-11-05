@@ -7,6 +7,7 @@ import { RepoBundle, RepoBundleRef } from '../../duffle/duffle.objectmodel';
 import { namespace, nameOnly } from '../../utils/bundleselection';
 import { iter, Group, Enumerable } from '../../utils/iterable';
 import { readRepoIndex } from '../../duffle/repo';
+import { tooltip, collapsibleState, contextValue } from '../bundlehierarchy';
 
 export class RepoExplorer implements vscode.TreeDataProvider<RepoExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -129,6 +130,7 @@ class RepoBundleNode implements RepoExplorerNode, RepoBundleRef {
     }
 
     getTreeItem(): vscode.TreeItem {
+        // TODO: could do with distinctive bundle-y icon here
         const treeItem = new vscode.TreeItem(this.label(), this.collapsibleState());
         treeItem.tooltip = this.tooltip();
         treeItem.contextValue = this.contextValue();
@@ -140,27 +142,15 @@ class RepoBundleNode implements RepoExplorerNode, RepoBundleRef {
     }
 
     private tooltip(): string {
-        if (this.bundle.version === 'latest') {
-            const versionCount = this.bundles.length <= 1 ? '' : ` (+ ${this.bundles.length - 1} other version(s))`;
-            return `${this.label()}:${this.bundle.version}${versionCount}`;
-        } else if (this.bundles.length === 1) {
-            return `${this.label()}:${this.bundle.version}`;
-        } else {
-            return `${this.bundles.length} versions`;
-        }
+        return tooltip(this.label(), this.bundle, this.bundles);
     }
 
     private collapsibleState(): vscode.TreeItemCollapsibleState {
-        return this.bundles.length > 1 ?
-            vscode.TreeItemCollapsibleState.Collapsed :
-            vscode.TreeItemCollapsibleState.None;
+        return collapsibleState(this.bundles);
     }
 
     private contextValue(): string | undefined {
-        if (this.bundle.version === 'latest' || this.bundles.length === 1) {
-            return "duffle.repoBundle";
-        }
-        return undefined;
+        return contextValue('duffle.repoBundle', this.bundle, this.bundles);
     }
 }
 

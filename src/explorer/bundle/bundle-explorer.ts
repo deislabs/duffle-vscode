@@ -5,6 +5,7 @@ import { succeeded } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
 import { LocalBundle, LocalBundleRef } from '../../duffle/duffle.objectmodel';
 import { iter, Group, Enumerable } from '../../utils/iterable';
+import { tooltip, collapsibleState, contextValue } from '../bundlehierarchy';
 
 export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -69,7 +70,7 @@ interface BundleExplorerNode {
 
 class LocalRepoNode implements BundleExplorerNode, LocalBundleRef {
     constructor(private readonly repo: Group<string, LocalBundle>) {
-        this.bundle = repo.values.find((b) => b.version === 'latest') || { name: '', version: '' };
+        this.bundle = repo.values.find((b) => b.version === 'latest') || repo.values[0];
     }
 
     readonly bundleLocation = 'local';
@@ -82,11 +83,26 @@ class LocalRepoNode implements BundleExplorerNode, LocalBundleRef {
 
     getTreeItem(): vscode.TreeItem {
         // TODO: could do with distinctive bundle-y icon here
-        const treeItem = new vscode.TreeItem(this.repo.key, vscode.TreeItemCollapsibleState.Collapsed);
-        if (this.bundle.version === 'latest') {
-            treeItem.contextValue = "duffle.localBundle";
-        }
+        const treeItem = new vscode.TreeItem(this.label(), this.collapsibleState());
+        treeItem.tooltip = this.tooltip();
+        treeItem.contextValue = this.contextValue();
         return treeItem;
+    }
+
+    private label(): string {
+        return this.repo.key;
+    }
+
+    private tooltip(): string {
+        return tooltip(this.label(), this.bundle, this.repo.values);
+    }
+
+    private collapsibleState(): vscode.TreeItemCollapsibleState {
+        return collapsibleState(this.repo.values);
+    }
+
+    private contextValue(): string | undefined {
+        return contextValue('duffle.localBundle', this.bundle, this.repo.values);
     }
 }
 
