@@ -4,10 +4,10 @@ import * as duffle from '../../duffle/duffle';
 import { succeeded, failed } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
 import { RepoBundle, RepoBundleRef } from '../../duffle/duffle.objectmodel';
-import { namespace, nameOnly } from '../../utils/bundleselection';
+import { nameOnly, prefix } from '../../utils/bundleselection';
 import { iter, Group, Enumerable } from '../../utils/iterable';
 import { readRepoIndex } from '../../duffle/repo';
-import { tooltip, collapsibleState, contextValue } from '../bundlehierarchy';
+import { getTreeItem, BundleHierarchyNode } from '../bundlehierarchy';
 
 export class RepoExplorer implements vscode.TreeDataProvider<RepoExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -39,18 +39,22 @@ async function getRootNodes(shell: Shell): Promise<RepoExplorerNode[]> {
     return [new ErrorNode(lr.error[0])];
 }
 
-function* nodesFor(group: Group<string | undefined, RepoBundle>): IterableIterator<RepoExplorerNode> {
+interface RepoBundleInHierarchy extends RepoBundle {
+    readonly strippedName: string;
+}
+
+function* nodesFor(group: Group<string | undefined, RepoBundleInHierarchy>): IterableIterator<RepoExplorerNode> {
     if (group.key) {
         yield new RepoNamespaceNode(group.key, group.values);
     } else {
-        const groupywoupy = iter(group.values).groupBy((b) => b.name).toArray();
-        yield* groupywoupy.map((g) => new RepoBundleNode(g.values));
+        const bundlesByName = iter(group.values).groupBy((b) => b.name).toArray();
+        yield* bundlesByName.map((g) => new RepoBundleNode(g.values));
     }
 }
 
-function nodes(bundles: Enumerable<RepoBundle>): RepoExplorerNode[] {
+function nodes(bundles: Enumerable<RepoBundleInHierarchy>): RepoExplorerNode[] {
     const grouped = bundles
-        .groupBy((rb) => namespace(rb))
+        .groupBy((rb) => prefix(rb.strippedName))
         .collect((g) => nodesFor(g))
         .toArray();
     return grouped;
@@ -83,10 +87,10 @@ class RepoNode implements RepoExplorerNode {
         return new vscode.TreeItem(this.path, vscode.TreeItemCollapsibleState.Collapsed);
     }
 
-    private namedBundles(entries: { [key: string]: RepoBundle[] }): Enumerable<RepoBundle> {
+    private namedBundles(entries: { [key: string]: RepoBundle[] }): Enumerable<RepoBundleInHierarchy> {
         return iter(Object.keys(entries))
             .collect((k) => entries[k].map(
-                (v) => ({ name: k, repository: this.path, version: v.version }))
+                (v) => ({ name: k, strippedName: k, repository: this.path, version: v.version }))
             );
     }
 }
@@ -94,12 +98,12 @@ class RepoNode implements RepoExplorerNode {
 class RepoNamespaceNode implements RepoExplorerNode {
     constructor(
         private readonly namespace: string,
-        private readonly bundles: RepoBundle[]) {
+        private readonly bundles: RepoBundleInHierarchy[]) {
     }
 
     async getChildren(shell: Shell): Promise<RepoExplorerNode[]> {
         const unnamespaced = iter(this.bundles)
-            .map((rb) => ({ name: this.unnamespace(rb.name), repository: rb.repository, version: rb.version }));
+            .map((rb) => ({ name: rb.name, strippedName: this.unnamespace(rb.strippedName), repository: rb.repository, version: rb.version }));
         return nodes(unnamespaced);
     }
 
@@ -116,10 +120,10 @@ class RepoNamespaceNode implements RepoExplorerNode {
     }
 }
 
-class RepoBundleNode implements RepoExplorerNode, RepoBundleRef {
-    readonly bundle: RepoBundle;
+class RepoBundleNode implements RepoExplorerNode, BundleHierarchyNode, RepoBundleRef {
+    readonly bundle: RepoBundleInHierarchy;
 
-    constructor(readonly bundles: RepoBundle[]) {
+    constructor(readonly bundles: RepoBundleInHierarchy[]) {
         this.bundle = bundles.find((b) => b.version === 'latest') || bundles[0];
     }
 
@@ -130,32 +134,17 @@ class RepoBundleNode implements RepoExplorerNode, RepoBundleRef {
     }
 
     getTreeItem(): vscode.TreeItem {
-        // TODO: could do with distinctive bundle-y icon here
-        const treeItem = new vscode.TreeItem(this.label(), this.collapsibleState());
-        treeItem.tooltip = this.tooltip();
-        treeItem.contextValue = this.contextValue();
-        return treeItem;
+        return getTreeItem(this);
     }
 
-    private label(): string {
-        return nameOnly(this.bundle);
-    }
-
-    private tooltip(): string {
-        return tooltip(this.label(), this.bundle, this.bundles);
-    }
-
-    private collapsibleState(): vscode.TreeItemCollapsibleState {
-        return collapsibleState(this.bundles);
-    }
-
-    private contextValue(): string | undefined {
-        return contextValue('duffle.repoBundle', this.bundle, this.bundles);
-    }
+    get label() { return nameOnly(this.bundle); }
+    get primary() { return this.bundle; }
+    get versions() { return this.bundles; }
+    get desiredContext() { return 'duffle.repoBundle'; }
 }
 
 class RepoBundleVersionNode implements RepoExplorerNode, RepoBundleRef {
-    constructor(readonly bundle: RepoBundle) { }
+    constructor(readonly bundle: RepoBundleInHierarchy) { }
 
     readonly bundleLocation = 'repo';
 
@@ -166,7 +155,7 @@ class RepoBundleVersionNode implements RepoExplorerNode, RepoBundleRef {
     getTreeItem(): vscode.TreeItem {
         const treeItem = new vscode.TreeItem(this.bundle.version, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = "duffle.repoBundle";
-        treeItem.tooltip = `${this.bundle.name}:${this.bundle.version}`;
+        treeItem.tooltip = `${this.bundle.strippedName}:${this.bundle.version}`;
         return treeItem;
     }
 }

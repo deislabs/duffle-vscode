@@ -189,7 +189,10 @@ function stripSignature(source: string): string {
 }
 
 export function namespace(bundle: RepoBundle): string | undefined {
-    const name = bundle.name;
+    return prefix(bundle.name);
+}
+
+export function prefix(name: string): string | undefined {
     const sepIndex = name.indexOf('/');
     if (sepIndex < 0) {
         return undefined;

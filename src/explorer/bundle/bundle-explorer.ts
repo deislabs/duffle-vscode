@@ -5,7 +5,8 @@ import { succeeded } from '../../utils/errorable';
 import { Shell } from '../../utils/shell';
 import { LocalBundle, LocalBundleRef } from '../../duffle/duffle.objectmodel';
 import { iter, Group, Enumerable } from '../../utils/iterable';
-import { tooltip, collapsibleState, contextValue } from '../bundlehierarchy';
+import { getTreeItem, BundleHierarchyNode } from '../bundlehierarchy';
+import { prefix } from '../../utils/bundleselection';
 
 export class BundleExplorer implements vscode.TreeDataProvider<BundleExplorerNode> {
     constructor(private readonly shell: Shell) { }
@@ -54,21 +55,12 @@ function stratifyByPrefix(groups: Enumerable<Group<string, LocalBundle>>): Bundl
     return prefixed.concat(unprefixed);
 }
 
-function prefix(name: string): string | undefined {
-    const sepIndex = name.indexOf('/');
-    if (sepIndex < 0) {
-        return undefined;
-    }
-    return name.substring(0, sepIndex);
-
-}
-
 interface BundleExplorerNode {
     getChildren(): Promise<BundleExplorerNode[]>;
     getTreeItem(): vscode.TreeItem;
 }
 
-class LocalRepoNode implements BundleExplorerNode, LocalBundleRef {
+class LocalRepoNode implements BundleExplorerNode, BundleHierarchyNode, LocalBundleRef {
     constructor(private readonly repo: Group<string, LocalBundle>) {
         this.bundle = repo.values.find((b) => b.version === 'latest') || repo.values[0];
     }
@@ -82,28 +74,13 @@ class LocalRepoNode implements BundleExplorerNode, LocalBundleRef {
     }
 
     getTreeItem(): vscode.TreeItem {
-        // TODO: could do with distinctive bundle-y icon here
-        const treeItem = new vscode.TreeItem(this.label(), this.collapsibleState());
-        treeItem.tooltip = this.tooltip();
-        treeItem.contextValue = this.contextValue();
-        return treeItem;
+        return getTreeItem(this);
     }
 
-    private label(): string {
-        return this.repo.key;
-    }
-
-    private tooltip(): string {
-        return tooltip(this.label(), this.bundle, this.repo.values);
-    }
-
-    private collapsibleState(): vscode.TreeItemCollapsibleState {
-        return collapsibleState(this.repo.values);
-    }
-
-    private contextValue(): string | undefined {
-        return contextValue('duffle.localBundle', this.bundle, this.repo.values);
-    }
+    get label() { return this.repo.key; }
+    get primary() { return this.bundle; }
+    get versions() { return this.repo.values; }
+    get desiredContext() { return 'duffle.localBundle'; }
 }
 
 class LocalRepoVersionNode implements BundleExplorerNode, LocalBundleRef {
