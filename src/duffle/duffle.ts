@@ -94,6 +94,10 @@ export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<E
     return await invokeObj(sh, 'push', `${bundleName}`, {}, (s) => null);
 }
 
+export async function pull(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'pull', `${bundleName}`, {}, (s) => null);
+}
+
 export function showStatus(bundleName: string): void {
     invokeInTerminal(`status ${bundleName}`);
 }

@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 
-import { InstallationRef, CredentialSetRef } from './duffle/duffle.objectmodel';
+import { InstallationRef, CredentialSetRef, RepoBundleRef } from './duffle/duffle.objectmodel';
 import { InstallationExplorer } from './explorer/installation/installation-explorer';
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { RepoExplorer } from './explorer/repo/repo-explorer';
@@ -18,6 +18,7 @@ import { succeeded } from './utils/errorable';
 import { selectProjectCreator } from './projects/ui';
 import { exposeParameter } from './commands/exposeparameter';
 import { generateCredentials } from './commands/generatecredentials';
+import { repoBundleRef } from './utils/bundleselection';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
@@ -35,6 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.installationUninstall', (node) => installationUninstall(node)),
         vscode.commands.registerCommand('duffle.createProject', createProject),
         vscode.commands.registerCommand('duffle.build', build),
+        vscode.commands.registerCommand('duffle.pull', pull),
         vscode.commands.registerCommand('duffle.push', push),
         vscode.commands.registerCommand('duffle.install', install),
         vscode.commands.registerCommand('duffle.generateCredentials', generateCredentials),
@@ -138,6 +140,19 @@ async function installationUninstall(bundle: InstallationRef): Promise<void> {
     }
 
     await showDuffleResult('uninstall', bundle.installationName, uninstallResult);
+}
+
+async function pull(repoBundle: RepoBundleRef): Promise<void> {
+    const bundleName = repoBundleRef(repoBundle.bundle);
+    const pullResult = await longRunning(`Duffle pulling ${bundleName}`, () =>
+        duffle.pull(shell.shell, bundleName)
+    );
+
+    if (succeeded(pullResult)) {
+        await refreshBundleExplorer();
+    }
+
+    await showDuffleResult('pull', bundleName, pullResult);
 }
 
 async function credentialsetDelete(credentialSet: CredentialSetRef): Promise<void> {

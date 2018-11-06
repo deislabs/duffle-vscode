@@ -93,7 +93,7 @@ export function repoBundleSelection(bundle: RepoBundle): BundleSelection {
     return {
         kind: 'repo',
         label: bundle.name,
-        bundle: `${bundle.repository}/${bundle.name}:${bundle.version}`
+        bundle: repoBundleRef(bundle)
     };
 }
 
@@ -151,6 +151,10 @@ export function bundleFilePath(bundlePick: FileBundleSelection): string {
 async function resolveLocalBundlePath(bundlePick: LocalBundleSelection): Promise<Errorable<string>> {
     const bundleInfo = parseLocalBundle(bundlePick.bundle);
     return await localBundlePath(bundleInfo.name, bundleInfo.version);
+}
+
+export function repoBundleRef(bundle: RepoBundle): string {
+    return `${bundle.repository}/${bundle.name}:${bundle.version}`;
 }
 
 function parseRepoBundle(bundle: string): RepoBundle {

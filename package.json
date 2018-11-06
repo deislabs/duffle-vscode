@@ -20,6 +20,7 @@
         "onCommand:duffle.installationUninstall",
         "onCommand:duffle.createProject",
         "onCommand:duffle.build",
+        "onCommand:duffle.pull",
         "onCommand:duffle.push",
         "onCommand:duffle.install",
         "onCommand:duffle.generateCredentials",
@@ -70,6 +71,11 @@
             {
                 "command": "duffle.build",
                 "title": "Build Bundle",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.pull",
+                "title": "Pull Bundle",
                 "category": "Duffle"
             },
             {
@@ -211,6 +217,11 @@
                     "group": "1"
                 },
                 {
+                    "command": "duffle.pull",
+                    "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
+                    "group": "2"
+                },
+                {
                     "command": "duffle.install",
                     "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
                     "group": "1"
@@ -274,6 +285,11 @@
                     "command": "duffle.installationUninstall",
                     "when": "view == duffle.installationExplorer && viewItem = duffle.installation",
                     "group": "navigation"
+                },
+                {
+                    "command": "duffle.pull",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.repoBundle",
+                    "group": "2"
                 },
                 {
                     "command": "duffle.refreshBundleExplorer",
