@@ -1,42 +1,47 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Proudly making Ronan regret his paternity leave since 2018 -->
-
-<svg
-   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   width="29"
-   height="28"
-   id="svg2"
-   version="1.1">
-  <g
-     id="layer1"
-     transform="translate(-6.3260942,-848.71877)">
-    <g
-       id="g3052">
-      <path
-         style="fill:#010101;fill-opacity:1;stroke:#ffffff;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         d="
-         M 1 1
-         L 15 1
-         L 20 6
-         L 20 20
-         L 15 25
-         L 1 25
-         L 1 6
-         L 6 6
-         L 6 20
-         L 13 20
-         L 15 18
-         L 15 8
-         L 13 6
-         L 6 6
-         Z"
-         transform="translate(6.3260942,848.71877)"
-         id="path3055" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128px" height="128px" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.3 (57544) - http://www.bohemiancoding.com/sketch -->
+    <title>Artboard</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M16.1745825,83.9161489 C5.41827099,84.6916063 0.0401152242,79.3117397 0.0401152242,67.7765493 C0.0401152242,61.202325 0.0401152242,66.0539567 0.0401152242,56.4885465 C0.0401152242,51.6764527 0.0401152242,43.6066703 0.0401152242,32.2791993 C-0.74559972,10.7597331 10.0107118,9.18431032e-16 32.3090498,-7.27196081e-15 C54.6073878,-7.27196081e-15 76.1200109,-7.27196081e-15 96.846919,-7.27196081e-15 C118.359542,0.44972322 129.115854,11.2094563 129.115854,32.2791993 C129.115854,53.3489423 129.115854,65.1813923 129.115854,67.7765493 C129.115854,78.5362824 123.737698,83.9161489 112.981386,83.9161489 C102.225075,83.9161489 69.9561402,83.9161489 16.1745825,83.9161489 Z" id="path-1"></path>
+        <rect id="path-3" x="-2.27373675e-13" y="0" width="28.6737805" height="8.55182927"></rect>
+    </defs>
+    <g id="Artboard" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Bag-Final" transform="translate(0.000000, 7.000000)">
+            <g id="straps" transform="translate(1.000000, 0.000000)" fill="#8F92A0" fill-rule="nonzero">
+                <polygon id="Path-11" transform="translate(97.160891, 44.849307) scale(1, -1) translate(-97.160891, -44.849307) " points="126.987138 0 82.2477678 89.6986145 67.3346444 89.6986145 112.074014 0"></polygon>
+                <rect id="Rectangle-17" x="52.6147104" y="0" width="26.1459604" height="5.16857963"></rect>
+                <polygon id="Path-11" points="59.8995819 0 15.1602118 89.6986145 0.2470885 89.6986145 44.9864585 0"></polygon>
+            </g>
+            <g id="bag" transform="translate(0.000000, 26.000000)">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <use id="Path-10" fill="#8F92A0" fill-rule="nonzero" xlink:href="#path-1"></use>
+                <polygon id="Path-11" fill="#8F92A0" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(109.057995, 41.618945) scale(1, -1) translate(-109.057995, -41.618945) " points="138.884241 -3.23036227 94.1448714 86.4682523 79.2317481 86.4682523 123.971118 -3.23036227"></polygon>
+                <polygon id="Path-11" fill="#8F92A0" fill-rule="nonzero" mask="url(#mask-2)" points="49.2684843 -3.23036227 4.52911428 86.4682523 -10.3840091 86.4682523 34.355361 -3.23036227"></polygon>
+                <g id="Group-12" mask="url(#mask-2)">
+                    <g transform="translate(13.838034, 21.088594)" id="shapes">
+                        <g transform="translate(0.079649, 0.019727)">
+                            <rect id="Rectangle-16" fill="#1E1E1E" fill-rule="nonzero" x="0.167682927" y="41.4176829" width="29.847561" height="8.88719512"></rect>
+                            <rect id="Rectangle-20" fill="#1E1E1E" fill-rule="nonzero" x="74.6189024" y="3.35365854" width="24.6493902" height="46.9512195"></rect>
+                            <rect id="Rectangle-20" fill="#1E1E1E" fill-rule="nonzero" x="74.6189024" y="33.5365854" width="24.6493902" height="16.9359756"></rect>
+                            <g id="Group" transform="translate(72.942073, 28.338415)">
+                                <mask id="mask-4" fill="white">
+                                    <use xlink:href="#path-3"></use>
+                                </mask>
+                                <use id="Rectangle-20" fill="#8F92A0" fill-rule="nonzero" xlink:href="#path-3"></use>
+                                <polygon id="Path-11" fill="#8F92A0" fill-rule="nonzero" mask="url(#mask-4)" transform="translate(22.198239, -7.827791) scale(1, -1) translate(-22.198239, 7.827791) " points="52.0244853 -52.6770983 7.28511532 37.0215163 -7.62800803 37.0215163 37.111362 -52.6770983"></polygon>
+                            </g>
+                            <polygon id="Triangle" fill="#1E1E1E" fill-rule="nonzero" points="46.0289634 15.929878 64.3902439 50.304878 27.6676829 50.304878"></polygon>
+                            <polygon id="Path-2" fill="#8F92A0" fill-rule="nonzero" points="45.945122 16.097561 27.2852374 50.8079268 20.8199965 50.8079268 19.4512195 50.8079268 37.8474831 16.097561"></polygon>
+                            <polygon id="Path-5" fill="#1E1E1E" fill-rule="nonzero" transform="translate(57.347561, 20.038110) scale(-1, 1) translate(-57.347561, -20.038110) " points="66.0670732 3.18597561 48.6280488 36.8902439 48.6280488 3.18597561"></polygon>
+                            <circle id="Oval-2" fill="#1E1E1E" fill-rule="nonzero" cx="17.9420732" cy="17.9420732" r="17.9420732"></circle>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
     </g>
-  </g>
 </svg>
