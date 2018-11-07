@@ -32,6 +32,11 @@ export interface LocalBundleSelection {
 
 export type BundleSelection = FileBundleSelection | RepoBundleSelection | LocalBundleSelection;
 
+export interface BundleContent {
+    readonly manifest: BundleManifest;
+    readonly text: string;
+}
+
 export async function promptBundleFile(prompt: string): Promise<BundleSelection | undefined> {
     const bundles = await workspaceBundleFiles();
     if (!bundles || bundles.length === 0) {
@@ -105,10 +110,18 @@ export function localBundleSelection(bundle: LocalBundle): BundleSelection {
     };
 }
 
-export async function bundleManifest(bundlePick: BundleSelection): Promise<Errorable<BundleManifest>> {
+export async function bundleContent(bundlePick: BundleSelection): Promise<Errorable<BundleContent>> {
     const bundleText = await readBundleText(bundlePick);
-    const jsonText = map(bundleText, jsonOnly);
-    return map(jsonText, JSON.parse);
+    return map(bundleText, (t) => {
+        const jsonText = jsonOnly(t);
+        const manifest = JSON.parse(jsonText);
+        return { manifest: manifest, text: t };
+    });
+}
+
+export async function bundleManifest(bundlePick: BundleSelection): Promise<Errorable<BundleManifest>> {
+    const content = await bundleContent(bundlePick);
+    return map(content, (c) => c.manifest);
 }
 
 async function readBundleText(bundlePick: BundleSelection): Promise<Errorable<string>> {
