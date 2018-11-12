@@ -83,11 +83,11 @@ export function bundles(sh: shell.Shell): Promise<Errorable<LocalBundle[]>> {
 }
 
 export async function upgrade(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'upgrade', bundleName, {}, (s) => null);
+    return await invokeObj(sh, 'upgrade', `${bundleName} --insecure`, {}, (s) => null);
 }
 
 export async function uninstall(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'uninstall', bundleName, {}, (s) => null);
+    return await invokeObj(sh, 'uninstall', `${bundleName} --insecure`, {}, (s) => null);
 }
 
 export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
@@ -95,7 +95,7 @@ export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<E
 }
 
 export async function pull(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'pull', `${bundleName}`, {}, (s) => null);
+    return await invokeObj(sh, 'pull', `${bundleName} --insecure`, {}, (s) => null);
 }
 
 export function showStatus(bundleName: string): void {
@@ -112,11 +112,11 @@ export async function build(sh: shell.Shell, folderPath: string): Promise<Errora
 }
 
 export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'install', `${name} -f "${bundleFilePath}" ${paramsArgs(params)} ${credentialArg(credentialSet)}`, {}, (s) => null);
+    return await invokeObj(sh, 'install', `${name} -f "${bundleFilePath}" ${paramsArgs(params)} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
 }
 
 export async function installBundle(sh: shell.Shell, bundleName: string, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'install', `${name} ${bundleName} ${paramsArgs(params)} ${credentialArg(credentialSet)}`, {}, (s) => null);
+    return await invokeObj(sh, 'install', `${name} ${bundleName} ${paramsArgs(params)} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
 }
 
 function paramsArgs(parameters: { [key: string]: string }): string {
@@ -163,9 +163,9 @@ export async function deleteCredentialSet(sh: shell.Shell, credentialSetName: st
 }
 
 export async function generateCredentialsForFile(sh: shell.Shell, bundleFilePath: string, name: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'credentials generate', `${name} -f "${bundleFilePath}" -q`, {}, (s) => null);
+    return await invokeObj(sh, 'credentials generate', `${name} -f "${bundleFilePath}" -q --insecure`, {}, (s) => null);
 }
 
 export async function generateCredentialsForBundle(sh: shell.Shell, bundleName: string, name: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'credentials generate', `${name} ${bundleName} -q`, {}, (s) => null);
+    return await invokeObj(sh, 'credentials generate', `${name} ${bundleName} -q --insecure`, {}, (s) => null);
 }
