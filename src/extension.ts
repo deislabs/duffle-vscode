@@ -2,14 +2,15 @@
 
 import * as vscode from 'vscode';
 
-import { BundleRef, CredentialSetRef } from './duffle/duffle.objectmodel';
+import { InstallationRef, CredentialSetRef, RepoBundleRef } from './duffle/duffle.objectmodel';
+import { InstallationExplorer } from './explorer/installation/installation-explorer';
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { RepoExplorer } from './explorer/repo/repo-explorer';
 import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
-import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshBundleExplorer, refreshCredentialExplorer, confirm } from './utils/host';
+import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshInstallationExplorer, refreshCredentialExplorer, confirm, refreshBundleExplorer } from './utils/host';
 import { push } from './commands/push';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
@@ -17,30 +18,35 @@ import { succeeded } from './utils/errorable';
 import { selectProjectCreator } from './projects/ui';
 import { exposeParameter } from './commands/exposeparameter';
 import { generateCredentials } from './commands/generatecredentials';
+import { repoBundleRef } from './utils/bundleselection';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
 export function activate(context: vscode.ExtensionContext) {
+    const installationExplorer = new InstallationExplorer(shell.shell);
     const bundleExplorer = new BundleExplorer(shell.shell);
     const repoExplorer = new RepoExplorer(shell.shell);
     const credentialExplorer = new CredentialExplorer(shell.shell);
     const duffleTOMLCompletionProvider = new DuffleTOMLCompletionProvider();
 
     const subscriptions = [
-        vscode.commands.registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
-        vscode.commands.registerCommand('duffle.bundleStatus', (node) => bundleStatus(node)),
-        vscode.commands.registerCommand('duffle.bundleUpgrade', (node) => bundleUpgrade(node)),
-        vscode.commands.registerCommand('duffle.bundleUninstall', (node) => bundleUninstall(node)),
+        vscode.commands.registerCommand('duffle.refreshInstallationExplorer', () => installationExplorer.refresh()),
+        vscode.commands.registerCommand('duffle.installationStatus', (node) => installationStatus(node)),
+        vscode.commands.registerCommand('duffle.installationUpgrade', (node) => installationUpgrade(node)),
+        vscode.commands.registerCommand('duffle.installationUninstall', (node) => installationUninstall(node)),
         vscode.commands.registerCommand('duffle.createProject', createProject),
         vscode.commands.registerCommand('duffle.build', build),
+        vscode.commands.registerCommand('duffle.pull', pull),
         vscode.commands.registerCommand('duffle.push', push),
         vscode.commands.registerCommand('duffle.install', install),
         vscode.commands.registerCommand('duffle.generateCredentials', generateCredentials),
+        vscode.commands.registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
         vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
         vscode.commands.registerCommand('duffle.refreshCredentialExplorer', () => credentialExplorer.refresh()),
         vscode.commands.registerCommand('duffle.credentialsetAdd', credentialSetAdd),
         vscode.commands.registerCommand('duffle.credentialsetDelete', (node) => credentialsetDelete(node)),
         vscode.commands.registerCommand('duffle.exposeParameter', exposeParameter),
+        vscode.window.registerTreeDataProvider("duffle.installationExplorer", installationExplorer),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.repoExplorer", repoExplorer),
         vscode.window.registerTreeDataProvider("duffle.credentialExplorer", credentialExplorer),
@@ -105,31 +111,48 @@ async function build(): Promise<void> {
         () => duffle.build(shell.shell, folderPath)
     );
 
+    if (succeeded(buildResult)) {
+        refreshBundleExplorer();
+    }
+
     await showDuffleResult('build', folderPath, buildResult);
 }
 
-function bundleStatus(bundle: BundleRef) {
-    duffle.showStatus(bundle.bundleName);
+function installationStatus(bundle: InstallationRef) {
+    duffle.showStatus(bundle.installationName);
 }
 
-async function bundleUpgrade(bundle: BundleRef): Promise<void> {
-    const upgradeResult = await longRunning(`Duffle upgrading ${bundle.bundleName}`,
-        () => duffle.upgrade(shell.shell, bundle.bundleName)
+async function installationUpgrade(bundle: InstallationRef): Promise<void> {
+    const upgradeResult = await longRunning(`Duffle upgrading ${bundle.installationName}`,
+        () => duffle.upgrade(shell.shell, bundle.installationName)
     );
 
-    await showDuffleResult('upgrade', bundle.bundleName, upgradeResult);
+    await showDuffleResult('upgrade', bundle.installationName, upgradeResult);
 }
 
-async function bundleUninstall(bundle: BundleRef): Promise<void> {
-    const uninstallResult = await longRunning(`Duffle uninstalling ${bundle.bundleName}`,
-        () => duffle.uninstall(shell.shell, bundle.bundleName)
+async function installationUninstall(bundle: InstallationRef): Promise<void> {
+    const uninstallResult = await longRunning(`Duffle uninstalling ${bundle.installationName}`,
+        () => duffle.uninstall(shell.shell, bundle.installationName)
     );
 
     if (succeeded(uninstallResult)) {
+        await refreshInstallationExplorer();
+    }
+
+    await showDuffleResult('uninstall', bundle.installationName, uninstallResult);
+}
+
+async function pull(repoBundle: RepoBundleRef): Promise<void> {
+    const bundleName = repoBundleRef(repoBundle.bundle);
+    const pullResult = await longRunning(`Duffle pulling ${bundleName}`, () =>
+        duffle.pull(shell.shell, bundleName)
+    );
+
+    if (succeeded(pullResult)) {
         await refreshBundleExplorer();
     }
 
-    await showDuffleResult('uninstall', bundle.bundleName, uninstallResult);
+    await showDuffleResult('pull', bundleName, pullResult);
 }
 
 async function credentialsetDelete(credentialSet: CredentialSetRef): Promise<void> {

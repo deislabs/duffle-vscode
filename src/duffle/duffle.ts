@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as config from '../config/config';
 import { Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
-import { RepoBundle } from './duffle.objectmodel';
+import { RepoBundle, LocalBundle } from './duffle.objectmodel';
 import { sharedTerminal } from './sharedterminal';
 import * as pairs from '../utils/pairs';
 
@@ -72,6 +72,16 @@ export function search(sh: shell.Shell): Promise<Errorable<RepoBundle[]>> {
     return invokeObj(sh, 'search', '', {}, parse);
 }
 
+export function bundles(sh: shell.Shell): Promise<Errorable<LocalBundle[]>> {
+    function parse(stdout: string): LocalBundle[] {
+        const lines = stdout.split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0);
+        return fromHeaderedTable<LocalBundle>(lines);
+    }
+    return invokeObj(sh, 'bundles', '', {}, parse);
+}
+
 export async function upgrade(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
     return await invokeObj(sh, 'upgrade', bundleName, {}, (s) => null);
 }
@@ -80,8 +90,12 @@ export async function uninstall(sh: shell.Shell, bundleName: string): Promise<Er
     return await invokeObj(sh, 'uninstall', bundleName, {}, (s) => null);
 }
 
-export async function pushFile(sh: shell.Shell, filePath: string, repo: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'push', `-f "${filePath}" --repo ${repo}`, {}, (s) => null);
+export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'push', `${bundleName}`, {}, (s) => null);
+}
+
+export async function pull(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'pull', `${bundleName}`, {}, (s) => null);
 }
 
 export function showStatus(bundleName: string): void {

@@ -2,7 +2,7 @@
     "name": "duffle-vscode",
     "displayName": "Duffle",
     "description": "VS Code extension for Duffle, the CNAB installer",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "preview": true,
     "publisher": "ms-kubernetes-tools",
     "engines": {
@@ -14,20 +14,23 @@
     ],
     "activationEvents": [
         "onLanguage:toml",
-        "onCommand:duffle.refreshBundleExplorer",
-        "onCommand:duffle.bundleStatus",
-        "onCommand:duffle.bundleUpgrade",
-        "onCommand:duffle.bundleUninstall",
+        "onCommand:duffle.refreshInstallationExplorer",
+        "onCommand:duffle.installationStatus",
+        "onCommand:duffle.installationUpgrade",
+        "onCommand:duffle.installationUninstall",
         "onCommand:duffle.createProject",
         "onCommand:duffle.build",
+        "onCommand:duffle.pull",
         "onCommand:duffle.push",
         "onCommand:duffle.install",
         "onCommand:duffle.generateCredentials",
+        "onCommand:duffle.refreshBundleExplorer",
         "onCommand:duffle.refreshRepoExplorer",
         "onCommand:duffle.refreshCredentialExplorer",
         "onCommand:duffle.credentialsetAdd",
         "onCommand:duffle.credentialsetDelete",
         "onCommand:duffle.exposeParameter",
+        "onView:duffle.installationExplorer",
         "onView:duffle.bundleExplorer",
         "onView:duffle.repoExplorer",
         "onView:duffle.credentialExplorer",
@@ -37,8 +40,8 @@
     "contributes": {
         "commands": [
             {
-                "command": "duffle.refreshBundleExplorer",
-                "title": "Refresh Bundle Explorer",
+                "command": "duffle.refreshInstallationExplorer",
+                "title": "Refresh Installation Explorer",
                 "category": "Duffle",
                 "icon": {
                     "light": "images/light/refresh.svg",
@@ -46,17 +49,17 @@
                 }
             },
             {
-                "command": "duffle.bundleStatus",
+                "command": "duffle.installationStatus",
                 "title": "Status",
                 "category": "Duffle"
             },
             {
-                "command": "duffle.bundleUpgrade",
+                "command": "duffle.installationUpgrade",
                 "title": "Upgrade",
                 "category": "Duffle"
             },
             {
-                "command": "duffle.bundleUninstall",
+                "command": "duffle.installationUninstall",
                 "title": "Uninstall",
                 "category": "Duffle"
             },
@@ -68,6 +71,11 @@
             {
                 "command": "duffle.build",
                 "title": "Build Bundle",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.pull",
+                "title": "Pull Bundle",
                 "category": "Duffle"
             },
             {
@@ -84,6 +92,15 @@
                 "command": "duffle.generateCredentials",
                 "title": "Generate Bundle Credential Set",
                 "category": "Duffle"
+            },
+            {
+                "command": "duffle.refreshBundleExplorer",
+                "title": "Refresh Bundle Explorer",
+                "category": "Duffle",
+                "icon": {
+                    "light": "images/light/refresh.svg",
+                    "dark": "images/dark/refresh.svg"
+                }
             },
             {
                 "command": "duffle.refreshRepoExplorer",
@@ -148,6 +165,11 @@
         "menus": {
             "view/title": [
                 {
+                    "command": "duffle.refreshInstallationExplorer",
+                    "when": "view == duffle.installationExplorer",
+                    "group": "navigation"
+                },
+                {
                     "command": "duffle.refreshBundleExplorer",
                     "when": "view == duffle.bundleExplorer",
                     "group": "navigation"
@@ -170,18 +192,18 @@
             ],
             "view/item/context": [
                 {
-                    "command": "duffle.bundleStatus",
-                    "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
+                    "command": "duffle.installationStatus",
+                    "when": "view == duffle.installationExplorer && viewItem == duffle.installation",
                     "group": "0"
                 },
                 {
-                    "command": "duffle.bundleUpgrade",
-                    "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
+                    "command": "duffle.installationUpgrade",
+                    "when": "view == duffle.installationExplorer && viewItem == duffle.installation",
                     "group": "1"
                 },
                 {
-                    "command": "duffle.bundleUninstall",
-                    "when": "view == duffle.bundleExplorer && viewItem == duffle.bundle",
+                    "command": "duffle.installationUninstall",
+                    "when": "view == duffle.installationExplorer && viewItem == duffle.installation",
                     "group": "2"
                 },
                 {
@@ -193,6 +215,26 @@
                     "command": "duffle.generateCredentials",
                     "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
                     "group": "1"
+                },
+                {
+                    "command": "duffle.pull",
+                    "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
+                    "group": "2"
+                },
+                {
+                    "command": "duffle.install",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
+                    "group": "1"
+                },
+                {
+                    "command": "duffle.generateCredentials",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
+                    "group": "1"
+                },
+                {
+                    "command": "duffle.push",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
+                    "group": "2"
                 },
                 {
                     "command": "duffle.credentialsetDelete",
@@ -220,16 +262,6 @@
                     "command": "duffle.generateCredentials",
                     "when": "resourceFilename == bundle.cnab",
                     "group": "9"
-                },
-                {
-                    "command": "duffle.push",
-                    "when": "resourceFilename == bundle.json",
-                    "group": "9"
-                },
-                {
-                    "command": "duffle.push",
-                    "when": "resourceFilename == bundle.cnab",
-                    "group": "9"
                 }
             ],
             "editor/context": [
@@ -241,18 +273,27 @@
             ],
             "commandPalette": [
                 {
+                    "command": "duffle.refreshInstallationExplorer",
+                    "when": "view == duffle.installationExplorer"
+                },
+                {
+                    "command": "duffle.installationStatus",
+                    "when": "view == duffle.installationExplorer && viewItem = duffle.installation",
+                    "group": "navigation"
+                },
+                {
+                    "command": "duffle.installationUninstall",
+                    "when": "view == duffle.installationExplorer && viewItem = duffle.installation",
+                    "group": "navigation"
+                },
+                {
+                    "command": "duffle.pull",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.repoBundle",
+                    "group": "2"
+                },
+                {
                     "command": "duffle.refreshBundleExplorer",
                     "when": "view == duffle.bundleExplorer"
-                },
-                {
-                    "command": "duffle.bundleStatus",
-                    "when": "view == duffle.bundleExplorer && viewItem = duffle.bundle",
-                    "group": "navigation"
-                },
-                {
-                    "command": "duffle.bundleUninstall",
-                    "when": "view == duffle.bundleExplorer && viewItem = duffle.bundle",
-                    "group": "navigation"
                 },
                 {
                     "command": "duffle.refreshRepoExplorer",
@@ -295,6 +336,10 @@
         },
         "views": {
             "duffle": [
+                {
+                    "id": "duffle.installationExplorer",
+                    "name": "Installations"
+                },
                 {
                     "id": "duffle.bundleExplorer",
                     "name": "Bundles"

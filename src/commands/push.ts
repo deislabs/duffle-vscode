@@ -1,24 +1,25 @@
 import * as vscode from 'vscode';
 
-import { promptBundle, fileBundleSelection, BundleSelection, bundleFilePath } from '../utils/bundleselection';
+import { BundleSelection, localBundleSelection, promptLocalBundle } from '../utils/bundleselection';
 import { showDuffleResult, refreshRepoExplorer, longRunning } from '../utils/host';
 import { succeeded, Errorable, map, failed } from '../utils/errorable';
 import { cantHappen } from '../utils/never';
 import * as duffle from '../duffle/duffle';
 import * as shell from '../utils/shell';
+import { LocalBundleRef, LocalBundle } from '../duffle/duffle.objectmodel';
 
 export async function push(target?: any): Promise<void> {
     if (!target) {
         return await pushPrompted();
     }
-    if (target.scheme) {
-        return await pushFile(target as vscode.Uri);
+    if (target.bundleLocation === 'local') {
+        return await pushLocalBundle((target as LocalBundleRef).bundle);
     }
     await vscode.window.showErrorMessage("Internal error: unexpected command target");
 }
 
 async function pushPrompted(): Promise<void> {
-    const bundlePick = await promptBundle("Select the bundle to push");
+    const bundlePick = await promptLocalBundle("Select the bundle to push");
 
     if (!bundlePick) {
         return;
@@ -27,16 +28,12 @@ async function pushPrompted(): Promise<void> {
     return await pushCore(bundlePick);
 }
 
-async function pushFile(file: vscode.Uri): Promise<void> {
-    if (file.scheme !== 'file') {
-        vscode.window.showErrorMessage("This command requires a filesystem bundle");
-        return;
-    }
-    return await pushCore(fileBundleSelection(file));
+async function pushLocalBundle(bundle: LocalBundle): Promise<void> {
+    return await pushCore(localBundleSelection(bundle));
 }
 
 async function pushCore(bundlePick: BundleSelection): Promise<void> {
-    const name = await promptRepo(shell.shell, `Push bundle in ${bundlePick.label} to...`);
+    const name = bundlePick.kind === 'file' ? await promptRepo(shell.shell, `Push bundle in ${bundlePick.label} to...`) : 'UNUSED';
     if (!name) {
         return;
     }
@@ -52,14 +49,14 @@ async function pushCore(bundlePick: BundleSelection): Promise<void> {
 
 async function pushTo(bundlePick: BundleSelection, repo: string): Promise<Errorable<string>> {
     if (bundlePick.kind === 'file') {
-        const bundlePath = bundleFilePath(bundlePick);
-        const pushResult = await longRunning(`Duffle push ${bundlePath}`,
-            () => duffle.pushFile(shell.shell, bundlePath, repo)
-        );
-        return map(pushResult, (_) => bundlePath);
+        return { succeeded: false, error: ['Internal error - cannot push filesystem bundles - import it first'] };
     } else if (bundlePick.kind === 'repo') {
-        // TODO: we will need to do this for the local repo I think
         return { succeeded: false, error: ['Internal error - cannot push bundles already in repos'] };
+    } else if (bundlePick.kind === 'local') {
+        const pushResult = await longRunning(`Duffle push ${bundlePick.bundle}`,
+            () => duffle.pushBundle(shell.shell, bundlePick.bundle)
+        );
+        return map(pushResult, (_) => bundlePick.bundle);
     }
     return cantHappen(bundlePick);
 }

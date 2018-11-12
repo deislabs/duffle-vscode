@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 
-import { longRunning, showDuffleResult, refreshBundleExplorer } from '../utils/host';
+import { longRunning, showDuffleResult, refreshInstallationExplorer } from '../utils/host';
 import * as duffle from '../duffle/duffle';
-import { RepoBundle, RepoBundleRef } from '../duffle/duffle.objectmodel';
+import { RepoBundle, RepoBundleRef, LocalBundleRef, LocalBundle } from '../duffle/duffle.objectmodel';
 import { succeeded, map, Errorable, failed } from '../utils/errorable';
 import * as shell from '../utils/shell';
 import { cantHappen } from '../utils/never';
-import { promptBundle, BundleSelection, fileBundleSelection, repoBundleSelection, bundleManifest, bundleFilePath, suggestName } from '../utils/bundleselection';
+import { promptBundleFile, BundleSelection, fileBundleSelection, repoBundleSelection, bundleManifest, bundleFilePath, suggestName, localBundleSelection } from '../utils/bundleselection';
 import { promptForParameters } from '../utils/parameters';
 import { promptForCredentials } from '../utils/credentials';
 
@@ -17,14 +17,17 @@ export async function install(target?: any): Promise<void> {
     if (target.scheme) {
         return await installFile(target as vscode.Uri);
     }
-    if (target.bundle) {
+    if (target.bundleLocation === 'repo') {
         return await installRepoBundle((target as RepoBundleRef).bundle);
+    }
+    if (target.bundleLocation === 'local') {
+        return await installLocalBundle((target as LocalBundleRef).bundle);
     }
     await vscode.window.showErrorMessage("Internal error: unexpected command target");
 }
 
 async function installPrompted(): Promise<void> {
-    const bundlePick = await promptBundle("Select the bundle to install");
+    const bundlePick = await promptBundleFile("Select the bundle to install");
 
     if (!bundlePick) {
         return;
@@ -43,6 +46,10 @@ async function installFile(file: vscode.Uri): Promise<void> {
 
 async function installRepoBundle(bundle: RepoBundle): Promise<void> {
     return await installCore(repoBundleSelection(bundle));
+}
+
+async function installLocalBundle(bundle: LocalBundle): Promise<void> {
+    return await installCore(localBundleSelection(bundle));
 }
 
 async function installCore(bundlePick: BundleSelection): Promise<void> {
@@ -71,7 +78,7 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
     const installResult = await installTo(bundlePick, name, parameterValues.value, credentialSet.value);
 
     if (succeeded(installResult)) {
-        await refreshBundleExplorer();
+        await refreshInstallationExplorer();
     }
 
     await showDuffleResult('install', (bundleId) => bundleId, installResult);
@@ -84,7 +91,7 @@ async function installTo(bundlePick: BundleSelection, name: string, params: { [k
             () => duffle.installFile(shell.shell, bundlePath, name, params, credentialSet)
         );
         return map(installResult, (_) => bundlePath);
-    } else if (bundlePick.kind === 'repo') {
+    } else if (bundlePick.kind === 'repo' || bundlePick.kind === 'local') {
         const installResult = await longRunning(`Duffle installing ${bundlePick.bundle}`,
             () => duffle.installBundle(shell.shell, bundlePick.bundle, name, params, credentialSet)
         );

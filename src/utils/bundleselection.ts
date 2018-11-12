@@ -3,10 +3,13 @@ import * as path from 'path';
 import * as request from 'request-promise-native';
 
 import { selectQuickPick } from './host';
-import { RepoBundle, BundleManifest } from '../duffle/duffle.objectmodel';
+import { RepoBundle, BundleManifest, LocalBundle } from '../duffle/duffle.objectmodel';
 import { cantHappen } from './never';
 import { fs } from './fs';
-import { Errorable, map } from './errorable';
+import { Errorable, map, failed } from './errorable';
+import * as duffle from '../duffle/duffle';
+import { localBundlePath } from '../duffle/duffle.paths';
+import { shell } from './shell';
 
 export interface FileBundleSelection {
     readonly kind: 'file';
@@ -21,9 +24,20 @@ export interface RepoBundleSelection {
     readonly bundle: string;
 }
 
-export type BundleSelection = FileBundleSelection | RepoBundleSelection;
+export interface LocalBundleSelection {
+    readonly kind: 'local';
+    readonly label: string;
+    readonly bundle: string;
+}
 
-export async function promptBundle(prompt: string): Promise<BundleSelection | undefined> {
+export type BundleSelection = FileBundleSelection | RepoBundleSelection | LocalBundleSelection;
+
+export interface BundleContent {
+    readonly manifest: BundleManifest;
+    readonly text: string;
+}
+
+export async function promptBundleFile(prompt: string): Promise<BundleSelection | undefined> {
     const bundles = await workspaceBundleFiles();
     if (!bundles || bundles.length === 0) {
         await vscode.window.showErrorMessage("This command requires a bundle file in the current workspace.");
@@ -32,12 +46,7 @@ export async function promptBundle(prompt: string): Promise<BundleSelection | un
 
     const bundleQuickPicks = bundles.map(fileBundleSelection);
 
-    const bundlePick = await selectQuickPick(bundleQuickPicks, { placeHolder: prompt });
-    if (!bundlePick) {
-        return undefined;
-    }
-
-    return bundlePick;
+    return await promptBundle(prompt, bundleQuickPicks);
 }
 
 async function workspaceBundleFiles(): Promise<vscode.Uri[]> {
@@ -45,6 +54,32 @@ async function workspaceBundleFiles(): Promise<vscode.Uri[]> {
     const signedBundles = vscode.workspace.findFiles('**/bundle.cnab');
     const bundles = ((await unsignedBundles) || []).concat((await signedBundles) || []);
     return bundles;
+}
+
+export async function promptLocalBundle(prompt: string): Promise<BundleSelection | undefined> {
+    const bundles = await duffle.bundles(shell);
+    if (failed(bundles)) {
+        await vscode.window.showErrorMessage(`Can't get the list of bundles: ${bundles.error[0]}`);
+        return undefined;
+    }
+
+    if (bundles.result.length === 0) {
+        await vscode.window.showErrorMessage("This command requires at least one bundle in your local store.");
+        return undefined;
+    }
+
+    const bundleQuickPicks = bundles.result.map(localBundleSelection);
+
+    return await promptBundle(prompt, bundleQuickPicks);
+}
+
+async function promptBundle(prompt: string, bundleQuickPicks: BundleSelection[]): Promise<BundleSelection | undefined> {
+    const bundlePick = await selectQuickPick(bundleQuickPicks, { placeHolder: prompt });
+    if (!bundlePick) {
+        return undefined;
+    }
+
+    return bundlePick;
 }
 
 export function fileBundleSelection(bundleFile: vscode.Uri): BundleSelection {
@@ -63,25 +98,36 @@ export function repoBundleSelection(bundle: RepoBundle): BundleSelection {
     return {
         kind: 'repo',
         label: bundle.name,
-        bundle: `${bundle.repository}/${bundle.name}:${bundle.version}`
+        bundle: repoBundleRef(bundle)
     };
 }
 
-export async function bundleManifest(bundlePick: BundleSelection): Promise<Errorable<BundleManifest>> {
+export function localBundleSelection(bundle: LocalBundle): BundleSelection {
+    return {
+        kind: 'local',
+        label: bundle.name,
+        bundle: `${bundle.name}:${bundle.version}`
+    };
+}
+
+export async function bundleContent(bundlePick: BundleSelection): Promise<Errorable<BundleContent>> {
     const bundleText = await readBundleText(bundlePick);
-    const jsonText = map(bundleText, jsonOnly);
-    return map(jsonText, JSON.parse);
+    return map(bundleText, (t) => {
+        const jsonText = jsonOnly(t);
+        const manifest = JSON.parse(jsonText);
+        return { manifest: manifest, text: t };
+    });
+}
+
+export async function bundleManifest(bundlePick: BundleSelection): Promise<Errorable<BundleManifest>> {
+    const content = await bundleContent(bundlePick);
+    return map(content, (c) => c.manifest);
 }
 
 async function readBundleText(bundlePick: BundleSelection): Promise<Errorable<string>> {
     if (bundlePick.kind === "file") {
         const bundleFile = bundleFilePath(bundlePick);
-        try {
-            const text = await fs.readFile(bundleFile, 'utf8');
-            return { succeeded: true, result: text };
-        } catch (e) {
-            return { succeeded: false, error: [`${e}`] };
-        }
+        return await tryReadFile(bundleFile);
     } else if (bundlePick.kind === "repo") {
         // TODO: probably stick the RepoBundle into RepoBundleSelection to save us parsing stuff out of the bundle ref string
         try {
@@ -92,12 +138,36 @@ async function readBundleText(bundlePick: BundleSelection): Promise<Errorable<st
         } catch (e) {
             return { succeeded: false, error: [`${e}`] };
         }
+    } else if (bundlePick.kind === "local") {
+        const bundleFile = await resolveLocalBundlePath(bundlePick);
+        if (bundleFile.succeeded) {
+            return await tryReadFile(bundleFile.result);
+        }
+        return bundleFile;
     }
     return cantHappen(bundlePick);
 }
 
-export function bundleFilePath(bundlePick: FileBundleSelection) {
+async function tryReadFile(bundleFile: string): Promise<Errorable<string>> {
+    try {
+        const text = await fs.readFile(bundleFile, 'utf8');
+        return { succeeded: true, result: text };
+    } catch (e) {
+        return { succeeded: false, error: [`${e}`] };
+    }
+}
+
+export function bundleFilePath(bundlePick: FileBundleSelection): string {
     return bundlePick.path;
+}
+
+async function resolveLocalBundlePath(bundlePick: LocalBundleSelection): Promise<Errorable<string>> {
+    const bundleInfo = parseLocalBundle(bundlePick.bundle);
+    return await localBundlePath(bundleInfo.name, bundleInfo.version);
+}
+
+export function repoBundleRef(bundle: RepoBundle): string {
+    return `${bundle.repository}/${bundle.name}:${bundle.version}`;
 }
 
 function parseRepoBundle(bundle: string): RepoBundle {
@@ -108,6 +178,13 @@ function parseRepoBundle(bundle: string): RepoBundle {
     const name = tag.substring(0, versionDelimiter);
     const version = tag.substring(versionDelimiter + 1);
     return { repository, name, version };
+}
+
+function parseLocalBundle(bundle: string): LocalBundle {
+    const versionDelimiter = bundle.indexOf(':');
+    const name = bundle.substring(0, versionDelimiter);
+    const version = bundle.substring(versionDelimiter + 1);
+    return { name, version };
 }
 
 function jsonOnly(source: string): string {
@@ -129,7 +206,10 @@ function stripSignature(source: string): string {
 }
 
 export function namespace(bundle: RepoBundle): string | undefined {
-    const name = bundle.name;
+    return prefix(bundle.name);
+}
+
+export function prefix(name: string): string | undefined {
     const sepIndex = name.indexOf('/');
     if (sepIndex < 0) {
         return undefined;
@@ -156,7 +236,7 @@ export function suggestName(bundlePick: BundleSelection): string {
         const containingDir = path.basename(path.dirname(bundlePick.path));
         return safeName(containingDir);
     } else {
-        const baseName = parseNameOnly(bundlePick.kind);
+        const baseName = parseNameOnly(bundlePick.label);
         return safeName(baseName);
     }
 }
