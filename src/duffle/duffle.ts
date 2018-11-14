@@ -79,7 +79,7 @@ export function bundles(sh: shell.Shell): Promise<Errorable<LocalBundle[]>> {
             .filter((l) => l.length > 0);
         return fromHeaderedTable<LocalBundle>(lines);
     }
-    return invokeObj(sh, 'bundle list', '', {}, parse);
+    return invokeObj(sh, 'bundle list', '--long', {}, parse);
 }
 
 export async function upgrade(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
