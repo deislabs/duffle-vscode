@@ -32,7 +32,6 @@
         "onCommand:duffle.exposeParameter",
         "onView:duffle.installationExplorer",
         "onView:duffle.bundleExplorer",
-        "onView:duffle.repoExplorer",
         "onView:duffle.credentialExplorer",
         "onLanguage:json"
     ],
@@ -233,7 +232,7 @@
                 },
                 {
                     "command": "duffle.push",
-                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle_TODO_REPO_restore_when_repos_land_for_real",
                     "group": "2"
                 },
                 {
@@ -288,7 +287,12 @@
                 },
                 {
                     "command": "duffle.pull",
-                    "when": "view == duffle.bundleExplorer && viewItem == duffle.repoBundle",
+                    "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
+                    "group": "2"
+                },
+                {
+                    "command": "duffle.push",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle_TODO_REPO_restore_when_repos_land_for_real",
                     "group": "2"
                 },
                 {
@@ -343,10 +347,6 @@
                 {
                     "id": "duffle.bundleExplorer",
                     "name": "Bundles"
-                },
-                {
-                    "id": "duffle.repoExplorer",
-                    "name": "Repositories"
                 },
                 {
                     "id": "duffle.credentialExplorer",

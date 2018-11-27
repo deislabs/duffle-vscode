@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import { InstallationRef, CredentialSetRef, RepoBundleRef } from './duffle/duffle.objectmodel';
 import { InstallationExplorer } from './explorer/installation/installation-explorer';
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
-import { RepoExplorer } from './explorer/repo/repo-explorer';
 import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
@@ -25,7 +24,6 @@ const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 export function activate(context: vscode.ExtensionContext) {
     const installationExplorer = new InstallationExplorer(shell.shell);
     const bundleExplorer = new BundleExplorer(shell.shell);
-    const repoExplorer = new RepoExplorer(shell.shell);
     const credentialExplorer = new CredentialExplorer(shell.shell);
     const duffleTOMLCompletionProvider = new DuffleTOMLCompletionProvider();
 
@@ -41,14 +39,13 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('duffle.install', install),
         vscode.commands.registerCommand('duffle.generateCredentials', generateCredentials),
         vscode.commands.registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
-        vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => repoExplorer.refresh()),
+        vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => { /* (TODO: REPO: restore when repos land for real) repoExplorer.refresh() */ }),
         vscode.commands.registerCommand('duffle.refreshCredentialExplorer', () => credentialExplorer.refresh()),
         vscode.commands.registerCommand('duffle.credentialsetAdd', credentialSetAdd),
         vscode.commands.registerCommand('duffle.credentialsetDelete', (node) => credentialsetDelete(node)),
         vscode.commands.registerCommand('duffle.exposeParameter', exposeParameter),
         vscode.window.registerTreeDataProvider("duffle.installationExplorer", installationExplorer),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
-        vscode.window.registerTreeDataProvider("duffle.repoExplorer", repoExplorer),
         vscode.window.registerTreeDataProvider("duffle.credentialExplorer", credentialExplorer),
         vscode.languages.registerCompletionItemProvider({ language: 'toml', pattern: '**/duffle.toml', scheme: 'file' }, duffleTOMLCompletionProvider)
     ];
