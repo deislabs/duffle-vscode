@@ -82,8 +82,8 @@ export function bundles(sh: shell.Shell): Promise<Errorable<LocalBundle[]>> {
     return invokeObj(sh, 'bundle list', '--long', {}, parse);
 }
 
-export async function upgrade(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'upgrade', `${bundleName} --insecure`, {}, (s) => null);
+export async function upgrade(sh: shell.Shell, bundleName: string, credentialSet: string | undefined): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'upgrade', `${bundleName} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
 }
 
 export async function uninstall(sh: shell.Shell, bundleName: string, credentialSet: string | undefined): Promise<Errorable<null>> {

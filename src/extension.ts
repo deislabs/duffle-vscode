@@ -121,8 +121,19 @@ function installationStatus(bundle: InstallationRef) {
 }
 
 async function installationUpgrade(bundle: InstallationRef): Promise<void> {
+    const claim = await duffle.getClaim(shell.shell, bundle.installationName);
+    if (failed(claim)) {
+        await vscode.window.showErrorMessage(`Error getting claim information: ${claim.error[0]}`);
+        return;
+    }
+
+    const credentialSet = await promptForCredentials(claim.result.bundle, shell.shell, 'Credential set to uninstall bundle with');
+    if (credentialSet.cancelled) {
+        return;
+    }
+
     const upgradeResult = await longRunning(`Duffle upgrading ${bundle.installationName}`,
-        () => duffle.upgrade(shell.shell, bundle.installationName)
+        () => duffle.upgrade(shell.shell, bundle.installationName, credentialSet.value)
     );
 
     await showDuffleResult('upgrade', bundle.installationName, upgradeResult);
