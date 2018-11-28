@@ -53,3 +53,9 @@ export interface BundleManifest {
     readonly parameters?: { [key: string]: ParameterDefinition };
     readonly credentials?: { [key: string]: CredentialLocation };
 }
+
+export interface Claim {
+    readonly name: string;
+    readonly bundle: BundleManifest;
+    // Ignoring other fields for now
+}
