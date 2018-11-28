@@ -102,8 +102,8 @@ export async function getClaim(sh: shell.Shell, claimName: string): Promise<Erro
     return await invokeObj(sh, 'claims show', claimName, {}, (s) => JSON.parse(s));
 }
 
-export function showStatus(bundleName: string): void {
-    invokeInTerminal(`status ${bundleName}`);
+export function showStatus(bundleName: string, credentialSet: string | undefined): void {
+    invokeInTerminal(`status ${bundleName} ${credentialArg(credentialSet)}`);
 }
 
 export async function build(sh: shell.Shell, folderPath: string): Promise<Errorable<null>> {

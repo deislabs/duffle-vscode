@@ -116,50 +116,49 @@ async function build(): Promise<void> {
     await showDuffleResult('build', folderPath, buildResult);
 }
 
-function installationStatus(bundle: InstallationRef) {
-    duffle.showStatus(bundle.installationName);
+async function withClaimCredentials(bundle: InstallationRef, description: string, action: (credentialSet: string | undefined) => Promise<void>): Promise<void> {
+    const claim = await duffle.getClaim(shell.shell, bundle.installationName);
+    if (failed(claim)) {
+        await vscode.window.showErrorMessage(`Error getting claim information: ${claim.error[0]}`);
+        return;
+    }
+
+    const credentialSet = await promptForCredentials(claim.result.bundle, shell.shell, `Credential set to ${description} with`);
+    if (credentialSet.cancelled) {
+        return;
+    }
+
+    return await action(credentialSet.value);
+}
+
+async function installationStatus(bundle: InstallationRef): Promise<void> {
+    await withClaimCredentials(bundle, 'query bundle status', async (credentialSet) => {
+        duffle.showStatus(bundle.installationName, credentialSet);
+    });
 }
 
 async function installationUpgrade(bundle: InstallationRef): Promise<void> {
-    const claim = await duffle.getClaim(shell.shell, bundle.installationName);
-    if (failed(claim)) {
-        await vscode.window.showErrorMessage(`Error getting claim information: ${claim.error[0]}`);
-        return;
-    }
+    await withClaimCredentials(bundle, 'upgrade bundle', async (credentialSet) => {
+        const upgradeResult = await longRunning(`Duffle upgrading ${bundle.installationName}`,
+            () => duffle.upgrade(shell.shell, bundle.installationName, credentialSet)
+        );
 
-    const credentialSet = await promptForCredentials(claim.result.bundle, shell.shell, 'Credential set to uninstall bundle with');
-    if (credentialSet.cancelled) {
-        return;
-    }
-
-    const upgradeResult = await longRunning(`Duffle upgrading ${bundle.installationName}`,
-        () => duffle.upgrade(shell.shell, bundle.installationName, credentialSet.value)
-    );
-
-    await showDuffleResult('upgrade', bundle.installationName, upgradeResult);
+        await showDuffleResult('upgrade', bundle.installationName, upgradeResult);
+    });
 }
 
 async function installationUninstall(bundle: InstallationRef): Promise<void> {
-    const claim = await duffle.getClaim(shell.shell, bundle.installationName);
-    if (failed(claim)) {
-        await vscode.window.showErrorMessage(`Error getting claim information: ${claim.error[0]}`);
-        return;
-    }
+    await withClaimCredentials(bundle, 'uninstall bundle', async (credentialSet) => {
+        const uninstallResult = await longRunning(`Duffle uninstalling ${bundle.installationName}`,
+            () => duffle.uninstall(shell.shell, bundle.installationName, credentialSet)
+        );
 
-    const credentialSet = await promptForCredentials(claim.result.bundle, shell.shell, 'Credential set to uninstall bundle with');
-    if (credentialSet.cancelled) {
-        return;
-    }
+        if (succeeded(uninstallResult)) {
+            await refreshInstallationExplorer();
+        }
 
-    const uninstallResult = await longRunning(`Duffle uninstalling ${bundle.installationName}`,
-        () => duffle.uninstall(shell.shell, bundle.installationName, credentialSet.value)
-    );
-
-    if (succeeded(uninstallResult)) {
-        await refreshInstallationExplorer();
-    }
-
-    await showDuffleResult('uninstall', bundle.installationName, uninstallResult);
+        await showDuffleResult('uninstall', bundle.installationName, uninstallResult);
+    });
 }
 
 async function pull(repoBundle: RepoBundleRef): Promise<void> {
