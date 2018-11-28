@@ -13,11 +13,12 @@ import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshInstallati
 import { push } from './commands/push';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
-import { succeeded } from './utils/errorable';
+import { succeeded, failed } from './utils/errorable';
 import { selectProjectCreator } from './projects/ui';
 import { exposeParameter } from './commands/exposeparameter';
 import { generateCredentials } from './commands/generatecredentials';
 import { repoBundleRef } from './utils/bundleselection';
+import { promptForCredentials } from './utils/credentials';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
@@ -128,8 +129,19 @@ async function installationUpgrade(bundle: InstallationRef): Promise<void> {
 }
 
 async function installationUninstall(bundle: InstallationRef): Promise<void> {
+    const claim = await duffle.getClaim(shell.shell, bundle.installationName);
+    if (failed(claim)) {
+        await vscode.window.showErrorMessage(`Error getting claim information: ${claim.error[0]}`);
+        return;
+    }
+
+    const credentialSet = await promptForCredentials(claim.result.bundle, shell.shell, 'Credential set to uninstall bundle with');
+    if (credentialSet.cancelled) {
+        return;
+    }
+
     const uninstallResult = await longRunning(`Duffle uninstalling ${bundle.installationName}`,
-        () => duffle.uninstall(shell.shell, bundle.installationName)
+        () => duffle.uninstall(shell.shell, bundle.installationName, credentialSet.value)
     );
 
     if (succeeded(uninstallResult)) {

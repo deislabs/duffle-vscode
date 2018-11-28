@@ -28,7 +28,7 @@ export class InstallationExplorer implements vscode.TreeDataProvider<Installatio
 }
 
 async function getInstallationNodes(shell: Shell): Promise<InstallationExplorerNode[]> {
-    const lr = await duffle.list(shell);
+    const lr = await duffle.listClaims(shell);
     if (succeeded(lr)) {
         return lr.result.map((n) => new InstallationNode(n));
     }

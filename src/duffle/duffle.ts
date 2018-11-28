@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as config from '../config/config';
 import { Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
-import { RepoBundle, LocalBundle } from './duffle.objectmodel';
+import { RepoBundle, LocalBundle, Claim } from './duffle.objectmodel';
 import { sharedTerminal } from './sharedterminal';
 import * as pairs from '../utils/pairs';
 
@@ -40,13 +40,13 @@ export function home(sh: shell.Shell): string {
     return process.env['DUFFLE_HOME'] || path.join(sh.home(), '.duffle');
 }
 
-export function list(sh: shell.Shell): Promise<Errorable<string[]>> {
+export function listClaims(sh: shell.Shell): Promise<Errorable<string[]>> {
     function parse(stdout: string): string[] {
         return stdout.split('\n')
             .map((l) => l.trim())
             .filter((l) => l.length > 0);
     }
-    return invokeObj(sh, 'list', '', {}, parse);
+    return invokeObj(sh, 'claims list', '', {}, parse);
 }
 
 export async function listRepos(sh: shell.Shell): Promise<Errorable<string[]>> {
@@ -86,8 +86,8 @@ export async function upgrade(sh: shell.Shell, bundleName: string): Promise<Erro
     return await invokeObj(sh, 'upgrade', `${bundleName} --insecure`, {}, (s) => null);
 }
 
-export async function uninstall(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'uninstall', `${bundleName} --insecure`, {}, (s) => null);
+export async function uninstall(sh: shell.Shell, bundleName: string, credentialSet: string | undefined): Promise<Errorable<null>> {
+    return await invokeObj(sh, 'uninstall', `${bundleName} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
 }
 
 export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
@@ -96,6 +96,10 @@ export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<E
 
 export async function pull(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
     return await invokeObj(sh, 'pull', `${bundleName} --insecure`, {}, (s) => null);
+}
+
+export async function getClaim(sh: shell.Shell, claimName: string): Promise<Errorable<Claim>> {
+    return await invokeObj(sh, 'claims show', claimName, {}, (s) => JSON.parse(s));
 }
 
 export function showStatus(bundleName: string): void {
