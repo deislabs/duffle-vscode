@@ -7,6 +7,7 @@ import { InstallationExplorer } from './explorer/installation/installation-explo
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
+import * as buildDefinition from './duffle/builddefinition';
 import * as duffle from './duffle/duffle';
 import { DuffleBuildDefinitionCompletionProvider } from './completion/duffle.builddefinition.completions';
 import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshInstallationExplorer, refreshCredentialExplorer, confirm, refreshBundleExplorer } from './utils/host';
@@ -48,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.registerTreeDataProvider("duffle.installationExplorer", installationExplorer),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.credentialExplorer", credentialExplorer),
-        vscode.languages.registerCompletionItemProvider({ language: 'toml', pattern: '**/duffle.toml', scheme: 'file' }, duffleBuildDefinitionCompletionProvider)
+        vscode.languages.registerCompletionItemProvider({ language: buildDefinition.languageId, pattern: `**/${buildDefinition.definitionFile}`, scheme: 'file' }, duffleBuildDefinitionCompletionProvider)
     ];
 
     initDiagnostics();

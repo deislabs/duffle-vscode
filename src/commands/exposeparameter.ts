@@ -51,7 +51,7 @@ export async function exposeParameter(): Promise<void> {
     const hasThisParameter = text.indexOf(`[parameters.${parameterNameToExpose}]`) >= 0;
 
     if (hasThisParameter) {
-        vscode.window.showErrorMessage(`Parameter ${parameterNameToExpose} is already defined in duffle.toml.`);
+        vscode.window.showErrorMessage(`Parameter ${parameterNameToExpose} is already defined in ${buildDefinition.definitionFile}.`);
         return;
     }
 

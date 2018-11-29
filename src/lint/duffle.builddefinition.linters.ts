@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
 import { Linter } from './linters';
+import * as buildDefinition from '../duffle/builddefinition';
 import { subdirectoriesFromFile } from '../utils/fsutils';
 import { iter, Enumerable } from '../utils/iterable';
 import { matches, RegExpMatch } from '../utils/re';
@@ -46,7 +47,7 @@ interface ComponentMatch extends RegExpMatch {
 }
 
 function isDuffleBuildDefinition(document: vscode.TextDocument): boolean {
-    return document.languageId === 'toml' && document.uri.toString().endsWith('duffle.toml');
+    return document.languageId === buildDefinition.languageId && document.uri.toString().endsWith(buildDefinition.definitionFile);
 }
 
 function components(document: vscode.TextDocument): Enumerable<ComponentMatch> {
