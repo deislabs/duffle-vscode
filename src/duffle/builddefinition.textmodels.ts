@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-export function getTemplateParameterInsertion(jsonSymbols: vscode.SymbolInformation[], newParameterName: string, newParameterDefn: any): vscode.TextEdit {
-    const editProvider = templateParameterInsertionEditProvider(jsonSymbols, newParameterName, newParameterDefn);
+export function getTemplateParameterInsertion(destSymbols: vscode.SymbolInformation[], newParameterName: string, newParameterDefn: any): vscode.TextEdit {
+    const editProvider = templateParameterInsertionEditProvider(destSymbols, newParameterName, newParameterDefn);
     return editProvider.getEdit();
 }
 
@@ -37,9 +37,9 @@ function immediatelyBefore(pos: vscode.Position) {
     return pos.translate(0, -1);
 }
 
-function templateParameterInsertionEditProvider(jsonSymbols: vscode.SymbolInformation[], newParameterName: string, newParameterDefn: any): IEditProvider {
-    const parametersElement = jsonSymbols.find((s) => s.name === 'parameters' && !s.containerName);
-    const parameterSymbols = jsonSymbols.filter((s) => s.containerName === 'parameters');
+function templateParameterInsertionEditProvider(destSymbols: vscode.SymbolInformation[], newParameterName: string, newParameterDefn: any): IEditProvider {
+    const parametersElement = destSymbols.find((s) => s.name === 'parameters' && !s.containerName);
+    const parameterSymbols = destSymbols.filter((s) => s.containerName === 'parameters');
     const lastExistingParameter = parameterSymbols.length > 0 ? parameterSymbols.reverse()[0] : undefined;  // not sure what order guarantees the symbol provider makes, but it's not critical if this isn't actually the last one
 
     class InsertAfterExistingParameter implements IEditProvider {
@@ -90,7 +90,7 @@ function templateParameterInsertionEditProvider(jsonSymbols: vscode.SymbolInform
             const parameters: any = {};
             parameters[newParameterName] = newParameterDefn;
 
-            const topLevelElement = jsonSymbols.find((s) => !s.containerName);
+            const topLevelElement = destSymbols.find((s) => !s.containerName);
             const indentPerLevel = topLevelElement ? indentOf(topLevelElement) : 2;
             const rawParametersSection = `"parameters": ${JSON.stringify(parameters, null, indentPerLevel)}`;
 
