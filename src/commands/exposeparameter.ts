@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import * as symbols from '../utils/symbols';
 import { isParameterDefinition } from '../utils/arm';
-import * as duffleTOML from '../duffle/toml';
+import * as buildDefinition from '../duffle/builddefinition';
 import * as edit from '../utils/edit';
 
 export async function exposeParameter(): Promise<void> {
@@ -40,12 +40,12 @@ export async function exposeParameter(): Promise<void> {
         return;
     }
 
-    const tomlPath = await duffleTOML.locate();
-    if (!tomlPath) {
+    const buildDefinitionPath = await buildDefinition.locate();
+    if (!buildDefinitionPath) {
         return;  // already showed error message
     }
 
-    const document = await vscode.workspace.openTextDocument(tomlPath);
+    const document = await vscode.workspace.openTextDocument(buildDefinitionPath);
 
     const text = document.getText();
     const hasThisParameter = text.indexOf(`[parameters.${parameterNameToExpose}]`) >= 0;

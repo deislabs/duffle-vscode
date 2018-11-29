@@ -7,7 +7,7 @@ import { matches, RegExpMatch } from '../utils/re';
 
 export class ComponentNameMustBeSubdirectory implements Linter {
     canLint(document: vscode.TextDocument): boolean {
-        return isDuffleTOML(document);
+        return isDuffleBuildDefinition(document);
     }
 
     async lint(document: vscode.TextDocument): Promise<vscode.Diagnostic[]> {
@@ -15,8 +15,8 @@ export class ComponentNameMustBeSubdirectory implements Linter {
             return [];
         }
 
-        const tomlPath = document.uri.fsPath;
-        const subdirectories = subdirectoriesFromFile(tomlPath);
+        const buildDefinitionPath = document.uri.fsPath;
+        const subdirectories = subdirectoriesFromFile(buildDefinitionPath);
 
         const diagnostics =
             components(document)
@@ -29,7 +29,7 @@ export class ComponentNameMustBeSubdirectory implements Linter {
 
 export class ComponentNameMustMatchNameElement implements Linter {
     canLint(document: vscode.TextDocument): boolean {
-        return isDuffleTOML(document);
+        return isDuffleBuildDefinition(document);
     }
 
     async lint(document: vscode.TextDocument): Promise<vscode.Diagnostic[]> {
@@ -45,7 +45,7 @@ interface ComponentMatch extends RegExpMatch {
     readonly componentName: string;
 }
 
-function isDuffleTOML(document: vscode.TextDocument): boolean {
+function isDuffleBuildDefinition(document: vscode.TextDocument): boolean {
     return document.languageId === 'toml' && document.uri.toString().endsWith('duffle.toml');
 }
 
