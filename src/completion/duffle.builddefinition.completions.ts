@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { subdirectoriesFromFile } from '../utils/fsutils';
 
-export class DuffleTOMLCompletionProvider implements vscode.CompletionItemProvider {
+export class DuffleBuildDefinitionCompletionProvider implements vscode.CompletionItemProvider {
     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
         const wordPos = document.getWordRangeAtPosition(position) || new vscode.Range(position, position);
         const line = document.lineAt(position.line).text;
