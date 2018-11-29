@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-export function getTemplateParameterInsertion(jsonSymbols: vscode.SymbolInformation[], propertyName: string, newParameterDefn: any): vscode.TextEdit {
-    const editProvider = templateParameterInsertionEditProvider(jsonSymbols, propertyName, newParameterDefn);
+export function getTemplateParameterInsertion(jsonSymbols: vscode.SymbolInformation[], newParameterName: string, newParameterDefn: any): vscode.TextEdit {
+    const editProvider = templateParameterInsertionEditProvider(jsonSymbols, newParameterName, newParameterDefn);
     return editProvider.getEdit();
 }
 
@@ -37,7 +37,7 @@ function immediatelyBefore(pos: vscode.Position) {
     return pos.translate(0, -1);
 }
 
-function templateParameterInsertionEditProvider(jsonSymbols: vscode.SymbolInformation[], propertyName: string, newParameterDefn: any): IEditProvider {
+function templateParameterInsertionEditProvider(jsonSymbols: vscode.SymbolInformation[], newParameterName: string, newParameterDefn: any): IEditProvider {
     const parametersElement = jsonSymbols.find((s) => s.name === 'parameters' && !s.containerName);
     const parameterSymbols = jsonSymbols.filter((s) => s.containerName === 'parameters');
     const lastExistingParameter = parameterSymbols.length > 0 ? parameterSymbols.reverse()[0] : undefined;  // not sure what order guarantees the symbol provider makes, but it's not critical if this isn't actually the last one
@@ -48,7 +48,7 @@ function templateParameterInsertionEditProvider(jsonSymbols: vscode.SymbolInform
         getEdit(): vscode.TextEdit {
             const indentPerLevel = indentFrom(this.existingParameter, this.parametersElement);
             const initialIndent = indentPerLevel * 2;
-            const rawNewParameterDefnText = `"${propertyName}": ${JSON.stringify(newParameterDefn, null, indentPerLevel)}`;
+            const rawNewParameterDefnText = `"${newParameterName}": ${JSON.stringify(newParameterDefn, null, indentPerLevel)}`;
             const newParameterDefnText = indentLines(rawNewParameterDefnText, initialIndent);
             const insertText = ',\n' + newParameterDefnText;
 
@@ -66,7 +66,7 @@ function templateParameterInsertionEditProvider(jsonSymbols: vscode.SymbolInform
             const indentPerLevel = this.parametersElement.location.range.start.character;
             const initialIndent = indentPerLevel * 2;
 
-            const rawNewParameterDefnText = `"${propertyName}": ${JSON.stringify(newParameterDefn, null, indentPerLevel)}`;
+            const rawNewParameterDefnText = `"${newParameterName}": ${JSON.stringify(newParameterDefn, null, indentPerLevel)}`;
             const newParameterDefnText = indentLines(rawNewParameterDefnText, initialIndent);
             const parametersElementOnOneLine = isSingleLine(this.parametersElement.location.range);  // for the "parameters": {} case
 
@@ -88,7 +88,7 @@ function templateParameterInsertionEditProvider(jsonSymbols: vscode.SymbolInform
     class InsertNewParametersSection implements IEditProvider {
         getEdit(): vscode.TextEdit {
             const parameters: any = {};
-            parameters[propertyName] = newParameterDefn;
+            parameters[newParameterName] = newParameterDefn;
 
             const topLevelElement = jsonSymbols.find((s) => !s.containerName);
             const indentPerLevel = topLevelElement ? indentOf(topLevelElement) : 2;
