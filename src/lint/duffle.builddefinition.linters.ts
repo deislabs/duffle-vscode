@@ -47,7 +47,7 @@ interface ComponentMatch extends RegExpMatch {
 }
 
 function isDuffleBuildDefinition(document: vscode.TextDocument): boolean {
-    return document.languageId === buildDefinition.languageId && document.uri.toString().endsWith(buildDefinition.definitionFile);
+    return document.languageId === buildDefinition.oldLanguageId && document.uri.toString().endsWith(buildDefinition.oldDefinitionFile);
 }
 
 function components(document: vscode.TextDocument): Enumerable<ComponentMatch> {

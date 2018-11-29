@@ -1,12 +1,17 @@
 import * as vscode from 'vscode';
 
-export async function activeSymbol(editor: vscode.TextEditor): Promise<vscode.SymbolInformation | undefined> {
+export interface SymbolInContext {
+    readonly symbol: vscode.DocumentSymbol;
+    readonly parent: SymbolInContext | undefined;
+}
+
+export async function activeSymbol(editor: vscode.TextEditor): Promise<SymbolInContext | undefined> {
     const symbols = await getSymbols(editor.document);
     if (symbols.length === 0) {
         return undefined;
     }
 
-    const activeSymbol = symbolAt(editor.selection.active, symbols);
+    const activeSymbol = symbolAt(editor.selection.active, symbols, undefined);
     if (!activeSymbol) {
         return undefined;
     }
@@ -14,7 +19,7 @@ export async function activeSymbol(editor: vscode.TextEditor): Promise<vscode.Sy
     return activeSymbol;
 }
 
-async function getSymbols(document: vscode.TextDocument): Promise<vscode.SymbolInformation[]> {
+export async function getSymbols(document: vscode.TextDocument): Promise<vscode.DocumentSymbol[]> {
     const sis: any = await vscode.commands.executeCommand('vscode.executeDocumentSymbolProvider', document.uri);
 
     if (sis && sis.length) {
@@ -24,20 +29,12 @@ async function getSymbols(document: vscode.TextDocument): Promise<vscode.SymbolI
     return [];
 }
 
-function symbolAt(position: vscode.Position, sis: vscode.SymbolInformation[]): vscode.SymbolInformation | undefined {
-    const containers = sis.filter((si) => si.location.range.contains(position));
-    if (containers.length === 0) {
-        return undefined;
+function symbolAt(position: vscode.Position, sis: vscode.DocumentSymbol[], context: SymbolInContext | undefined): SymbolInContext | undefined {
+    const outer = sis.find((si) => si.range.contains(position));
+    if (!outer) {
+        return context;
     }
-    return minimalSymbol(containers);
-}
-
-function minimalSymbol(sis: vscode.SymbolInformation[]): vscode.SymbolInformation {
-    let m = sis[0];
-    for (const si of sis) {
-        if (m.location.range.contains(si.location.range)) {
-            m = si;
-        }
-    }
-    return m;
+    const outerInContext = { symbol: outer, parent: context };
+    const sic = symbolAt(position, outer.children, outerInContext);
+    return sic || outerInContext;
 }

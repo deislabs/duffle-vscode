@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export function getTemplateParameterInsertion(destSymbols: vscode.SymbolInformation[], newParameterName: string, newParameterDefn: any): vscode.TextEdit {
+export function getTemplateParameterInsertion(destSymbols: vscode.DocumentSymbol[], newParameterName: string, newParameterDefn: any): vscode.TextEdit {
     const editProvider = templateParameterInsertionEditProvider(destSymbols, newParameterName, newParameterDefn);
     return editProvider.getEdit();
 }
@@ -9,11 +9,11 @@ interface IEditProvider {
     getEdit(): vscode.TextEdit;
 }
 
-function indentOf(symbol: vscode.SymbolInformation) {
-    return symbol.location.range.start.character;
+function indentOf(symbol: vscode.DocumentSymbol) {
+    return symbol.range.start.character;
 }
 
-function indentFrom(symbol1: vscode.SymbolInformation, symbol2: vscode.SymbolInformation) {
+function indentFrom(symbol1: vscode.DocumentSymbol, symbol2: vscode.DocumentSymbol) {
     const offset = indentOf(symbol1) - indentOf(symbol2);
     return Math.abs(offset);
 }
@@ -37,13 +37,13 @@ function immediatelyBefore(pos: vscode.Position) {
     return pos.translate(0, -1);
 }
 
-function templateParameterInsertionEditProvider(destSymbols: vscode.SymbolInformation[], newParameterName: string, newParameterDefn: any): IEditProvider {
-    const parametersElement = destSymbols.find((s) => s.name === 'parameters' && !s.containerName);
-    const parameterSymbols = destSymbols.filter((s) => s.containerName === 'parameters');
+function templateParameterInsertionEditProvider(destSymbols: vscode.DocumentSymbol[], newParameterName: string, newParameterDefn: any): IEditProvider {
+    const parametersElement = destSymbols.find((s) => s.name === 'parameters');
+    const parameterSymbols = parametersElement ? parametersElement.children : [];
     const lastExistingParameter = parameterSymbols.length > 0 ? parameterSymbols.reverse()[0] : undefined;  // not sure what order guarantees the symbol provider makes, but it's not critical if this isn't actually the last one
 
     class InsertAfterExistingParameter implements IEditProvider {
-        constructor(private readonly parametersElement: vscode.SymbolInformation, private readonly existingParameter: vscode.SymbolInformation) {
+        constructor(private readonly parametersElement: vscode.DocumentSymbol, private readonly existingParameter: vscode.DocumentSymbol) {
         }
         getEdit(): vscode.TextEdit {
             const indentPerLevel = indentFrom(this.existingParameter, this.parametersElement);
@@ -52,7 +52,7 @@ function templateParameterInsertionEditProvider(destSymbols: vscode.SymbolInform
             const newParameterDefnText = indentLines(rawNewParameterDefnText, initialIndent);
             const insertText = ',\n' + newParameterDefnText;
 
-            const insertPos = this.existingParameter.location.range.end;
+            const insertPos = this.existingParameter.range.end;
             const edit = vscode.TextEdit.insert(insertPos, insertText);
 
             return edit;
@@ -60,15 +60,15 @@ function templateParameterInsertionEditProvider(destSymbols: vscode.SymbolInform
     }
 
     class InsertIntoEmptyParametersSection implements IEditProvider {
-        constructor(private readonly parametersElement: vscode.SymbolInformation) {
+        constructor(private readonly parametersElement: vscode.DocumentSymbol) {
         }
         getEdit(): vscode.TextEdit {
-            const indentPerLevel = this.parametersElement.location.range.start.character;
+            const indentPerLevel = this.parametersElement.range.start.character;
             const initialIndent = indentPerLevel * 2;
 
             const rawNewParameterDefnText = `"${newParameterName}": ${JSON.stringify(newParameterDefn, null, indentPerLevel)}`;
             const newParameterDefnText = indentLines(rawNewParameterDefnText, initialIndent);
-            const parametersElementOnOneLine = isSingleLine(this.parametersElement.location.range);  // for the "parameters": {} case
+            const parametersElementOnOneLine = isSingleLine(this.parametersElement.range);  // for the "parameters": {} case
 
             // prefix and suffix are for fixing up cases where the parameters element is squashed on one line
             const prefix = (parametersElementOnOneLine ? '\n' : '');
@@ -77,7 +77,7 @@ function templateParameterInsertionEditProvider(destSymbols: vscode.SymbolInform
 
             // if the parameters element is squashed then our insert position is to the left of the closing brace (which will push things into the right place)
             // otherwise we want to insert at the start of the line containing the closing brace
-            const closingBracePos = this.parametersElement.location.range.end;
+            const closingBracePos = this.parametersElement.range.end;
             const insertPos = (parametersElementOnOneLine ? immediatelyBefore(closingBracePos) : lineStart(closingBracePos));
             const edit = vscode.TextEdit.insert(insertPos, insertText);
 
@@ -90,7 +90,7 @@ function templateParameterInsertionEditProvider(destSymbols: vscode.SymbolInform
             const parameters: any = {};
             parameters[newParameterName] = newParameterDefn;
 
-            const topLevelElement = destSymbols.find((s) => !s.containerName);
+            const topLevelElement = destSymbols[0];
             const indentPerLevel = topLevelElement ? indentOf(topLevelElement) : 2;
             const rawParametersSection = `"parameters": ${JSON.stringify(parameters, null, indentPerLevel)}`;
 

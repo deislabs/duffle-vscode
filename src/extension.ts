@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.registerTreeDataProvider("duffle.installationExplorer", installationExplorer),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.credentialExplorer", credentialExplorer),
-        vscode.languages.registerCompletionItemProvider({ language: buildDefinition.languageId, pattern: `**/${buildDefinition.definitionFile}`, scheme: 'file' }, duffleBuildDefinitionCompletionProvider)
+        vscode.languages.registerCompletionItemProvider({ language: buildDefinition.oldLanguageId, pattern: `**/${buildDefinition.oldDefinitionFile}`, scheme: 'file' }, duffleBuildDefinitionCompletionProvider)
     ];
 
     initDiagnostics();
