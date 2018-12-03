@@ -108,13 +108,11 @@ export function showStatus(bundleName: string, credentialSet: string | undefined
 }
 
 export async function build(sh: shell.Shell, folderPath: string): Promise<Errorable<null>> {
-    const buildFile = path.join(folderPath, buildDefinition.oldDefinitionFile);
+    const buildFile = path.join(folderPath, buildDefinition.newDefinitionFile);
     if (!fs.existsSync(buildFile)) {
-        return { succeeded: false, error: [`${folderPath} does not contain a ${buildDefinition.oldDefinitionFile} file`] };
+        return { succeeded: false, error: [`${folderPath} does not contain a ${buildDefinition.newDefinitionFile} file`] };
     }
-    // ~~duffle build works *only* from the folder containing the build definition file~~
-    // TODO: ^^ this is now fixed in the Duffle CLI
-    return await invokeObj(sh, 'build', '.', { cwd: folderPath }, (s) => null);
+    return await invokeObj(sh, 'build', `${folderPath}`, {}, (s) => null);
 }
 
 export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<null>> {
