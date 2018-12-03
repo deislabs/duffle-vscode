@@ -325,7 +325,7 @@
         },
         "snippets": [
             {
-                "language": "toml",
+                "language": "json",
                 "path": "./snippets/duffle.json"
             }
         ],

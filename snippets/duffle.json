@@ -1,25 +1,31 @@
 {
-    "duffle.toml": {
-        "prefix": "duffle.toml",
+    "duffle.json": {
+        "prefix": "duffle.json",
         "body": [
-            "name = \"$1\"",
+            "{",
+            "    \"name\": \"$1\",",
+            "    \"version\": \"0.0.1\",",
             "",
-            "[components]",
-            "    [components.cnab]",
-            "        name = \"cnab\"",
-            "        builder = \"docker\"",
+            "    \"invocationImages\": {",
+            "        \"cnab\": {",
+            "            \"name\": \"cnab\",",
+            "            \"builder\": \"docker\"",
+            "        }",
+            "    }",
+            "}",
             ""
         ],
-        "description": "Create a duffle.toml file"
+        "description": "Create a duffle.json file"
     },
-    "component": {
-        "prefix": "component",
+    "invocationImage": {
+        "prefix": "invocationImage",
         "body": [
-            "    [components.$1]",
-            "        name = \"$1\"",
-            "        builder = \"${2:docker}\"",
+            "\"$1\": {",
+            "    \"name\": \"$1\",",
+            "    \"builder\": \"${2:docker}\"",
+            "}",
             ""
         ],
-        "description": "Add a component to duffle.toml"
+        "description": "Add an invocation image to duffle.json"
     }
 }
