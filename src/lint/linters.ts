@@ -8,8 +8,8 @@ export interface Linter {
 }
 
 const linters: Linter[] = [
-    new buildDefinition.ComponentNameMustBeSubdirectory(),
-    new buildDefinition.ComponentNameMustMatchNameElement()
+    new buildDefinition.InvocationImageNameMustBeSubdirectory(),
+    new buildDefinition.InvocationImageNameMustMatchNameElement()
 ];
 
 export function lintTo(dc: vscode.DiagnosticCollection): (document: vscode.TextDocument) => Promise<void> {

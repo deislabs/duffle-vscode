@@ -1,5 +1,10 @@
 import * as vscode from 'vscode';
 
+export interface WithSymbol<T> {
+    readonly value: T;
+    readonly symbol: vscode.DocumentSymbol;
+}
+
 export interface SymbolInContext {
     readonly symbol: vscode.DocumentSymbol;
     readonly parent: SymbolInContext | undefined;

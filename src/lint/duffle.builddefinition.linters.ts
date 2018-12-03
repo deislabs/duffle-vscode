@@ -4,9 +4,10 @@ import { Linter } from './linters';
 import * as buildDefinition from '../duffle/builddefinition';
 import { subdirectoriesFromFile } from '../utils/fsutils';
 import { iter, Enumerable } from '../utils/iterable';
-import { matches, RegExpMatch } from '../utils/re';
+import { getSymbols, WithSymbol } from '../utils/symbols';
+import { Pair, fromMap } from '../utils/pairs';
 
-export class ComponentNameMustBeSubdirectory implements Linter {
+export class InvocationImageNameMustBeSubdirectory implements Linter {
     canLint(document: vscode.TextDocument): boolean {
         return isDuffleBuildDefinition(document);
     }
@@ -19,110 +20,96 @@ export class ComponentNameMustBeSubdirectory implements Linter {
         const buildDefinitionPath = document.uri.fsPath;
         const subdirectories = subdirectoriesFromFile(buildDefinitionPath);
 
+        const symbols = invocationImageSymbols(await getSymbols(document));
+
         const diagnostics =
-            components(document)
-                .filter((m) => !isPresent(m.componentName, subdirectories))
-                .map((m) => makeNotSubdirectoryDiagnostic(document, m.index, m.matchText.length, m.componentName));
+            invocationImages(document)
+                .filter((m) => !isPresent(m.key, subdirectories))
+                .map((m) => invocationImageSymbol(symbols, m))
+                .map((m) => makeNotSubdirectoryDiagnostic(m.symbol.selectionRange, m.value.key));
 
         return diagnostics.toArray();
     }
 }
 
-export class ComponentNameMustMatchNameElement implements Linter {
+export class InvocationImageNameMustMatchNameElement implements Linter {
     canLint(document: vscode.TextDocument): boolean {
         return isDuffleBuildDefinition(document);
     }
 
     async lint(document: vscode.TextDocument): Promise<vscode.Diagnostic[]> {
+        const symbols = invocationImageSymbols(await getSymbols(document));
+
         const diagnostics =
-            components(document)
+            invocationImages(document)
+                .map((m) => invocationImageSymbol(symbols, m))
                 .collect((m) => nameDiagnostics(m, document));
 
         return diagnostics.toArray();
     }
 }
 
-interface ComponentMatch extends RegExpMatch {
-    readonly componentName: string;
+function invocationImageSymbols(symbols: vscode.DocumentSymbol[]): vscode.DocumentSymbol[] {
+    const parent = symbols.find((s) => s.name === "invocationImages");
+    return parent ? parent.children : [];
+}
+
+function invocationImageSymbol(symbols: vscode.DocumentSymbol[], image: Pair<InvocationImage>): WithSymbol<Pair<InvocationImage>> {
+    return { value: image, symbol: symbols.find((s) => s.name === image.key)! };
+}
+
+interface InvocationImage {
+    readonly name: string;
 }
 
 function isDuffleBuildDefinition(document: vscode.TextDocument): boolean {
-    return document.languageId === buildDefinition.oldLanguageId && document.uri.toString().endsWith(buildDefinition.oldDefinitionFile);
+    return document.languageId === buildDefinition.newLanguageId && document.uri.toString().endsWith(buildDefinition.newDefinitionFile);
 }
 
-function components(document: vscode.TextDocument): Enumerable<ComponentMatch> {
-    const re = /\[components\.[^\]]+\]/g;
-    const text = document.getText();
-    return iter(matches(re, text))
-        .map((m) => ({ componentName: namePart(m.matchText), ...m }));
+function invocationImages(document: vscode.TextDocument): Enumerable<Pair<InvocationImage>> {
+    return iter(invocationImagesCore(document));
 }
 
-function namePart(componentHeader: string): string {
-    const text = componentHeader.substring(1, componentHeader.length - 1);
-    const sepIndex = text.indexOf('.');
-    return text.substring(sepIndex + 1);
+function invocationImagesCore(document: vscode.TextDocument): Pair<InvocationImage>[] {
+    try {
+        const buildDef = JSON.parse(document.getText());
+        if (buildDef) {
+            return fromMap<InvocationImage>(buildDef.invocationImages);
+        }
+        return [];
+    } catch {
+        return [];  // text may be temporarily invalid due to edit in progress
+    }
 }
 
 function isPresent(name: string, candidates: string[]): boolean {
     return candidates.indexOf(name) >= 0;
 }
 
-function* nameDiagnostics(component: ComponentMatch, document: vscode.TextDocument): IterableIterator<vscode.Diagnostic> {
-    const nameLine = findNextNameLine(document, component.index);
-    if (!nameLine) {
-        yield makeNoNameDiagnostic(document, component.index, component.matchText.length);
+function* nameDiagnostics(image: WithSymbol<Pair<InvocationImage>>, document: vscode.TextDocument): IterableIterator<vscode.Diagnostic> {
+    const nameSymbol = findNameSymbol(image.symbol);
+    if (!nameSymbol) {
+        yield makeNoNameDiagnostic(image.symbol.selectionRange);
         return;
     }
-    const nameLineName = getValue(nameLine);
-    if (nameLineName !== component.componentName) {
-        yield makeNameMismatchDiagnostic(document, component.index, component.matchText.length, component.componentName, nameLineName);
+    const invocationImage = image.value;
+    if (invocationImage.key !== invocationImage.value.name) {
+        yield makeNameMismatchDiagnostic(nameSymbol.range, invocationImage.key, invocationImage.value.name);
     }
 }
 
-function findNextNameLine(document: vscode.TextDocument, afterIndex: number): string | null {
-    const nameExpr = /name\s*=/;
-    return iter(sectionLines(document, afterIndex))
-        .first((l) => nameExpr.test(l));
+function findNameSymbol(imageSymbol: vscode.DocumentSymbol): vscode.DocumentSymbol | undefined {
+    return imageSymbol.children.find((s) => s.name === "name");
 }
 
-function* sectionLines(document: vscode.TextDocument, afterIndex: number): IterableIterator<string> {
-    const headerLineIndex = document.positionAt(afterIndex).line;
-    for (let i = headerLineIndex + 1; i < document.lineCount; ++i) {
-        const line = document.lineAt(i).text.trim();
-        if (line.startsWith('[')) {
-            // we've entered a new section
-            break;
-        }
-        yield line;
-    }
+function makeNotSubdirectoryDiagnostic(range: vscode.Range, name: string): vscode.Diagnostic {
+    return new vscode.Diagnostic(range, `${name} is not a subdirectory`, vscode.DiagnosticSeverity.Warning);
 }
 
-function getValue(text: string): string {
-    const sepIndex = text.indexOf('=');
-    const value = text.substring(sepIndex + 1);
-    return unquote(value);
+function makeNoNameDiagnostic(range: vscode.Range) {
+    return new vscode.Diagnostic(range, `Image specification does not contain a 'name' element`, vscode.DiagnosticSeverity.Warning);
 }
 
-function unquote(text: string): string {
-    const s = text.trim();
-    if (s.startsWith('"') && s.endsWith('"')) {
-        return s.substring(1, s.length - 1);
-    }
-    return s;
-}
-
-function range(document: vscode.TextDocument, start: number, length: number): vscode.Range {
-    return new vscode.Range(document.positionAt(start), document.positionAt(start + length));
-}
-
-function makeNotSubdirectoryDiagnostic(document: vscode.TextDocument, start: number, length: number, name: string): vscode.Diagnostic {
-    return new vscode.Diagnostic(range(document, start, length), `${name} is not a subdirectory`, vscode.DiagnosticSeverity.Warning);
-}
-
-function makeNoNameDiagnostic(document: vscode.TextDocument, start: number, length: number) {
-    return new vscode.Diagnostic(range(document, start, length), `Component does not contain a 'name' element`, vscode.DiagnosticSeverity.Warning);
-}
-
-function makeNameMismatchDiagnostic(document: vscode.TextDocument, start: number, length: number, titleName: string, containedName: string) {
-    return new vscode.Diagnostic(range(document, start, length), `Component name ${titleName} does not match 'name' element ${containedName}`, vscode.DiagnosticSeverity.Warning);
+function makeNameMismatchDiagnostic(range: vscode.Range, titleName: string, containedName: string) {
+    return new vscode.Diagnostic(range, `Image name ${titleName} does not match 'name' element ${containedName}`, vscode.DiagnosticSeverity.Warning);
 }
