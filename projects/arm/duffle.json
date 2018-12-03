@@ -1,0 +1,13 @@
+{
+    "name": "{{!BUNDLE_NAME!}}",
+    "version": "0.0.1",
+    "invocationImages": {
+        "cnab": {
+            "name": "cnab",
+            "builder": "docker",
+            "configuration": {
+                "registry": "{{!REGISTRY!}}"
+            }
+        }
+    }
+}

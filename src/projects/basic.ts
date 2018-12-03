@@ -22,7 +22,7 @@ async function create(rootPath: string): Promise<Errorable<string | undefined>> 
         'cnab/app'
     ];
     const files = [
-        'duffle.toml',
+        'duffle.json',
         'cnab/Dockerfile',
         'cnab/app/run'
     ];
