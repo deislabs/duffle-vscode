@@ -7,9 +7,7 @@ import { InstallationExplorer } from './explorer/installation/installation-explo
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
-import * as buildDefinition from './duffle/builddefinition';
 import * as duffle from './duffle/duffle';
-import { DuffleBuildDefinitionCompletionProvider } from './completion/duffle.builddefinition.completions';
 import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshInstallationExplorer, refreshCredentialExplorer, confirm, refreshBundleExplorer } from './utils/host';
 import { push } from './commands/push';
 import { install } from './commands/install';
@@ -27,7 +25,6 @@ export function activate(context: vscode.ExtensionContext) {
     const installationExplorer = new InstallationExplorer(shell.shell);
     const bundleExplorer = new BundleExplorer(shell.shell);
     const credentialExplorer = new CredentialExplorer(shell.shell);
-    const duffleBuildDefinitionCompletionProvider = new DuffleBuildDefinitionCompletionProvider();
 
     const subscriptions = [
         vscode.commands.registerCommand('duffle.refreshInstallationExplorer', () => installationExplorer.refresh()),
@@ -49,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.registerTreeDataProvider("duffle.installationExplorer", installationExplorer),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.credentialExplorer", credentialExplorer),
-        vscode.languages.registerCompletionItemProvider({ language: buildDefinition.oldLanguageId, pattern: `**/${buildDefinition.oldDefinitionFile}`, scheme: 'file' }, duffleBuildDefinitionCompletionProvider)
+        // vscode.languages.registerCompletionItemProvider({ language: buildDefinition.oldLanguageId, pattern: `**/${buildDefinition.oldDefinitionFile}`, scheme: 'file' }, duffleBuildDefinitionCompletionProvider)  // TODO: rewrite for JSON
     ];
 
     initDiagnostics();

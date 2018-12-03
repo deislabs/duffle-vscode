@@ -108,9 +108,9 @@ export function showStatus(bundleName: string, credentialSet: string | undefined
 }
 
 export async function build(sh: shell.Shell, folderPath: string): Promise<Errorable<null>> {
-    const buildFile = path.join(folderPath, buildDefinition.newDefinitionFile);
+    const buildFile = path.join(folderPath, buildDefinition.definitionFile);
     if (!fs.existsSync(buildFile)) {
-        return { succeeded: false, error: [`${folderPath} does not contain a ${buildDefinition.newDefinitionFile} file`] };
+        return { succeeded: false, error: [`${folderPath} does not contain a ${buildDefinition.definitionFile} file`] };
     }
     return await invokeObj(sh, 'build', `${folderPath}`, {}, (s) => null);
 }

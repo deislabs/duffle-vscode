@@ -13,7 +13,6 @@
         "Other"
     ],
     "activationEvents": [
-        "onLanguage:toml",
         "onCommand:duffle.refreshInstallationExplorer",
         "onCommand:duffle.installationStatus",
         "onCommand:duffle.installationUpgrade",

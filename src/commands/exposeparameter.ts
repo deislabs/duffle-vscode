@@ -41,7 +41,7 @@ export async function exposeParameter(): Promise<void> {
         return;
     }
 
-    const buildDefinitionPath = await buildDefinition.locate(true);
+    const buildDefinitionPath = await buildDefinition.locate();
     if (!buildDefinitionPath) {
         return;  // already showed error message
     }
@@ -51,7 +51,7 @@ export async function exposeParameter(): Promise<void> {
     const buildDefinitionSymbols = await symbols.getSymbols(buildDefinitionDocument);
 
     if (hasParameter(buildDefinitionSymbols, parameterNameToExpose)) {
-        vscode.window.showErrorMessage(`Parameter ${parameterNameToExpose} is already defined in ${buildDefinition.newDefinitionFile}.`);
+        vscode.window.showErrorMessage(`Parameter ${parameterNameToExpose} is already defined in ${buildDefinition.definitionFile}.`);
         return;
     }
 

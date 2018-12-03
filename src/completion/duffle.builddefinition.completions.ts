@@ -1,26 +1,28 @@
-import * as vscode from 'vscode';
+// TODO: rewrite for JSON
 
-import { subdirectoriesFromFile } from '../utils/fsutils';
+// import * as vscode from 'vscode';
 
-export class DuffleBuildDefinitionCompletionProvider implements vscode.CompletionItemProvider {
-    provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
-        const wordPos = document.getWordRangeAtPosition(position) || new vscode.Range(position, position);
-        const line = document.lineAt(position.line).text;
-        const lineUntil = line.substr(0, wordPos.start.character).trim();
+// import { subdirectoriesFromFile } from '../utils/fsutils';
 
-        if (shouldPrompt(lineUntil)) {
-            const tomlPath = document.uri.fsPath;
-            const completionItems =
-                subdirectoriesFromFile(tomlPath)
-                    .filter((d) => !d.startsWith('.'))
-                    .map((d) => new vscode.CompletionItem(`${d}`));
-            return new vscode.CompletionList(completionItems);
-        }
+// export class DuffleBuildDefinitionCompletionProvider implements vscode.CompletionItemProvider {
+//     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
+//         const wordPos = document.getWordRangeAtPosition(position) || new vscode.Range(position, position);
+//         const line = document.lineAt(position.line).text;
+//         const lineUntil = line.substr(0, wordPos.start.character).trim();
 
-        return [];
-    }
-}
+//         if (shouldPrompt(lineUntil)) {
+//             const tomlPath = document.uri.fsPath;
+//             const completionItems =
+//                 subdirectoriesFromFile(tomlPath)
+//                     .filter((d) => !d.startsWith('.'))
+//                     .map((d) => new vscode.CompletionItem(`${d}`));
+//             return new vscode.CompletionList(completionItems);
+//         }
 
-function shouldPrompt(lineUntil: string): boolean {
-    return lineUntil.endsWith("components.");
-}
+//         return [];
+//     }
+// }
+
+// function shouldPrompt(lineUntil: string): boolean {
+//     return lineUntil.endsWith("components.");
+// }

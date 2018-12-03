@@ -4,14 +4,10 @@ import * as path from 'path';
 import { fs } from '../utils/fs';
 import { selectWorkspaceFolder } from '../utils/host';
 
-export const oldDefinitionFile = 'duffle.toml';
-export const oldLanguageId = 'toml';
-export const newDefinitionFile = 'duffle.json';
-export const newLanguageId = 'json';
+export const definitionFile = 'duffle.json';
+export const languageId = 'json';
 
-export async function locate(useNew: boolean): Promise<string | undefined> {
-    const definitionFile = useNew ? newDefinitionFile : oldDefinitionFile;
-
+export async function locate(): Promise<string | undefined> {
     const folder = await selectWorkspaceFolder("Choose Duffle project folder");
     if (!folder) {
         return undefined;

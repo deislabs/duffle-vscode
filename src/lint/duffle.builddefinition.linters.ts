@@ -63,7 +63,7 @@ interface InvocationImage {
 }
 
 function isDuffleBuildDefinition(document: vscode.TextDocument): boolean {
-    return document.languageId === buildDefinition.newLanguageId && document.uri.toString().endsWith(buildDefinition.newDefinitionFile);
+    return document.languageId === buildDefinition.languageId && document.uri.toString().endsWith(buildDefinition.definitionFile);
 }
 
 function invocationImages(document: vscode.TextDocument): Enumerable<Pair<InvocationImage>> {
