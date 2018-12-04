@@ -47,7 +47,7 @@ export function listClaims(sh: shell.Shell): Promise<Errorable<string[]>> {
             .map((l) => l.trim())
             .filter((l) => l.length > 0);
     }
-    return invokeObj(sh, 'claims list', '', {}, parse);
+    return invokeObj(sh, 'claims list', '--short', {}, parse);
 }
 
 export async function listRepos(sh: shell.Shell): Promise<Errorable<string[]>> {
@@ -60,7 +60,7 @@ export function listCredentialSets(sh: shell.Shell): Promise<Errorable<string[]>
             .map((l) => l.trim())
             .filter((l) => l.length > 0);
     }
-    return invokeObj(sh, 'credentials list', '', {}, parse);
+    return invokeObj(sh, 'credentials list', '--short', {}, parse);
 }
 
 export function search(sh: shell.Shell): Promise<Errorable<RepoBundle[]>> {
@@ -80,7 +80,7 @@ export function bundles(sh: shell.Shell): Promise<Errorable<LocalBundle[]>> {
             .filter((l) => l.length > 0);
         return fromHeaderedTable<LocalBundle>(lines);
     }
-    return invokeObj(sh, 'bundle list', '--long', {}, parse);
+    return invokeObj(sh, 'bundle list', '', {}, parse);
 }
 
 export async function upgrade(sh: shell.Shell, bundleName: string, credentialSet: string | undefined): Promise<Errorable<null>> {
