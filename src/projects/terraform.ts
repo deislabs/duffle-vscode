@@ -24,7 +24,7 @@ async function create(rootPath: string): Promise<Errorable<string | undefined>> 
         'cnab/app/tf'
     ];
     const files = [
-        'duffle.toml',
+        'duffle.json',
         'cnab/Dockerfile',
         'cnab/app/tf/aks.tf',
         'cnab/app/tf/main.tf',

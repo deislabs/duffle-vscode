@@ -4,8 +4,11 @@ import * as path from 'path';
 import { fs } from '../utils/fs';
 import { selectWorkspaceFolder } from '../utils/host';
 
+export const definitionFile = 'duffle.json';
+export const languageId = 'json';
+
 export async function locate(): Promise<string | undefined> {
-    const folder = await selectWorkspaceFolder("Choose folder to build");
+    const folder = await selectWorkspaceFolder("Choose Duffle project folder");
     if (!folder) {
         return undefined;
     }
@@ -17,9 +20,9 @@ export async function locate(): Promise<string | undefined> {
 
     const folderPath = folder.uri.fsPath;
 
-    const buildFile = path.join(folderPath, 'duffle.toml');
+    const buildFile = path.join(folderPath, definitionFile);
     if (!(await fs.exists(buildFile))) {
-        vscode.window.showErrorMessage(`${folderPath} does not contain a duffle.toml file`);
+        vscode.window.showErrorMessage(`${folderPath} does not contain a ${definitionFile} file`);
         return undefined;
     }
 

@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 
 import * as symbols from '../utils/symbols';
 import { isParameterDefinition } from '../utils/arm';
-import * as duffleTOML from '../duffle/toml';
+import * as buildDefinition from '../duffle/builddefinition';
+import * as textmodels from '../duffle/builddefinition.textmodels';
 import * as edit from '../utils/edit';
 
 export async function exposeParameter(): Promise<void> {
@@ -19,12 +20,12 @@ export async function exposeParameter(): Promise<void> {
         return;
     }
 
-    if (activeSymbol.containerName !== "parameters") {
+    if (!activeSymbol.parent || activeSymbol.parent.symbol.name !== "parameters") {
         await vscode.window.showErrorMessage("This command requires an ARM template parameter definition to be selected.");
         return;
     }
 
-    const parameterNameToExpose = activeSymbol.name;
+    const parameterNameToExpose = activeSymbol.symbol.name;
 
     const template = JSON.parse(editor.document.getText());
     if (!template.parameters || !template.parameters[parameterNameToExpose]) {
@@ -40,55 +41,35 @@ export async function exposeParameter(): Promise<void> {
         return;
     }
 
-    const tomlPath = await duffleTOML.locate();
-    if (!tomlPath) {
+    const buildDefinitionPath = await buildDefinition.locate();
+    if (!buildDefinitionPath) {
         return;  // already showed error message
     }
 
-    const document = await vscode.workspace.openTextDocument(tomlPath);
+    const buildDefinitionDocument = await vscode.workspace.openTextDocument(buildDefinitionPath);
 
-    const text = document.getText();
-    const hasThisParameter = text.indexOf(`[parameters.${parameterNameToExpose}]`) >= 0;
+    const buildDefinitionSymbols = await symbols.getSymbols(buildDefinitionDocument);
 
-    if (hasThisParameter) {
-        vscode.window.showErrorMessage(`Parameter ${parameterNameToExpose} is already defined in duffle.toml.`);
+    if (hasParameter(buildDefinitionSymbols, parameterNameToExpose)) {
+        vscode.window.showErrorMessage(`Parameter ${parameterNameToExpose} is already defined in ${buildDefinition.definitionFile}.`);
         return;
     }
 
-    const parametersSectionIndex = text.indexOf('[parameters]');
-    const needsParametersSection = parametersSectionIndex < 0;
+    const newParameterDefn: any = parameterToExpose;
 
-    const parameterTOML = makeParameterTOML(parameterNameToExpose, parameterToExpose);
-    if (needsParametersSection) {
-        parameterTOML.unshift("[parameters]");
-    }
+    const insertParamEdit = textmodels.getTemplateParameterInsertion(buildDefinitionSymbols, parameterNameToExpose, newParameterDefn);
 
-    const after = needsParametersSection ? 'at-end' : document.positionAt(parametersSectionIndex).line;
-    const e = edit.insertLines(document, after, parameterTOML);
+    const e = { document: buildDefinitionDocument, edits: [insertParamEdit] };
+
     edit.applyEdits(e);
     edit.show(e);
 }
 
-function makeParameterTOML(name: string, definition: any): string[] {
-    const lines = [
-        `[parameters.${name}]`,
-        `type = "${definition.type}"`
-    ];
-    const quote = (v: any) => (definition.type === 'string') ? `"${v}"` : v;
-    if (definition.defaultValue !== undefined) {
-        lines.push(`defaultValue = ${quote(definition.defaultValue)}`);
+function hasParameter(symbols: vscode.DocumentSymbol[], name: string): boolean {
+    const parametersElement = symbols.find((s) => s.name === 'parameters');
+    if (parametersElement) {
+        const parameterElements = parametersElement.children || [];
+        return parameterElements.some((e) => e.name === name);
     }
-    if (definition.allowedValues !== undefined) {
-        lines.push(`allowedValues = [${definition.allowedValues.map(quote).join(', ')}]`);
-    }
-    for (const numericProp of ['minValue', 'maxValue', 'minLength', 'maxLength']) {
-        if (definition[numericProp] !== undefined) {
-            lines.push(`${numericProp} = ${definition[numericProp]}`);
-        }
-    }
-    if (definition.metadata && definition.metadata.description) {
-        lines.push(`[parameters.${name}.metadata]`);
-        lines.push(`description = "${definition.metadata.description}"`);
-    }
-    return lines.map((l) => '    ' + l);
+    return false;
 }

@@ -13,7 +13,6 @@
         "Other"
     ],
     "activationEvents": [
-        "onLanguage:toml",
         "onCommand:duffle.refreshInstallationExplorer",
         "onCommand:duffle.installationStatus",
         "onCommand:duffle.installationUpgrade",
@@ -325,7 +324,7 @@
         },
         "snippets": [
             {
-                "language": "toml",
+                "language": "json",
                 "path": "./snippets/duffle.json"
             }
         ],

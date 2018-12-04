@@ -8,6 +8,7 @@ import * as shell from '../utils/shell';
 import { RepoBundle, LocalBundle, Claim } from './duffle.objectmodel';
 import { sharedTerminal } from './sharedterminal';
 import * as pairs from '../utils/pairs';
+import * as buildDefinition from './builddefinition';
 
 const logChannel = vscode.window.createOutputChannel("Duffle");
 
@@ -107,12 +108,11 @@ export function showStatus(bundleName: string, credentialSet: string | undefined
 }
 
 export async function build(sh: shell.Shell, folderPath: string): Promise<Errorable<null>> {
-    const buildFile = path.join(folderPath, 'duffle.toml');
+    const buildFile = path.join(folderPath, buildDefinition.definitionFile);
     if (!fs.existsSync(buildFile)) {
-        return { succeeded: false, error: [`${folderPath} does not contain a duffle.toml file`] };
+        return { succeeded: false, error: [`${folderPath} does not contain a ${buildDefinition.definitionFile} file`] };
     }
-    // duffle build works *only* from the folder containing duffle.toml
-    return await invokeObj(sh, 'build', '.', { cwd: folderPath }, (s) => null);
+    return await invokeObj(sh, 'build', `${folderPath}`, {}, (s) => null);
 }
 
 export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<null>> {

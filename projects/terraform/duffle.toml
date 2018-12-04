@@ -1,7 +1,0 @@
-name = "{{!BUNDLE_NAME!}}"
-
-[components]
-    [components.cnab]
-        name = "cnab"
-        builder = "docker"
-        configuration = { registry = "{{!REGISTRY!}}" }

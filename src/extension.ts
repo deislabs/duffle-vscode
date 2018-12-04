@@ -8,7 +8,6 @@ import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
-import { DuffleTOMLCompletionProvider } from './completion/duffle.toml.completions';
 import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshInstallationExplorer, refreshCredentialExplorer, confirm, refreshBundleExplorer } from './utils/host';
 import { push } from './commands/push';
 import { install } from './commands/install';
@@ -26,7 +25,6 @@ export function activate(context: vscode.ExtensionContext) {
     const installationExplorer = new InstallationExplorer(shell.shell);
     const bundleExplorer = new BundleExplorer(shell.shell);
     const credentialExplorer = new CredentialExplorer(shell.shell);
-    const duffleTOMLCompletionProvider = new DuffleTOMLCompletionProvider();
 
     const subscriptions = [
         vscode.commands.registerCommand('duffle.refreshInstallationExplorer', () => installationExplorer.refresh()),
@@ -48,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.registerTreeDataProvider("duffle.installationExplorer", installationExplorer),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.credentialExplorer", credentialExplorer),
-        vscode.languages.registerCompletionItemProvider({ language: 'toml', pattern: '**/duffle.toml', scheme: 'file' }, duffleTOMLCompletionProvider)
+        // vscode.languages.registerCompletionItemProvider({ language: buildDefinition.oldLanguageId, pattern: `**/${buildDefinition.oldDefinitionFile}`, scheme: 'file' }, duffleBuildDefinitionCompletionProvider)  // TODO: rewrite for JSON
     ];
 
     initDiagnostics();
