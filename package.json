@@ -2,7 +2,7 @@
     "name": "duffle-vscode",
     "displayName": "Duffle",
     "description": "VS Code extension for Duffle, the CNAB installer",
-    "version": "0.0.2",
+    "version": "0.0.4",
     "preview": true,
     "publisher": "ms-kubernetes-tools",
     "engines": {
@@ -382,6 +382,6 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/deis/duffle-vscode"
+        "url": "https://github.com/deislabs/duffle-vscode"
     }
 }
