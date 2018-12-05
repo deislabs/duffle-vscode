@@ -9,6 +9,7 @@ import { cantHappen } from '../utils/never';
 import { promptBundleFile, BundleSelection, fileBundleSelection, repoBundleSelection, bundleManifest, bundleFilePath, suggestName, localBundleSelection } from '../utils/bundleselection';
 import { promptForParameters } from '../utils/parameters';
 import { promptForCredentials } from '../utils/credentials';
+import { reportErrorableResult } from '../utils/telemetry-helper';
 
 export async function install(target?: any): Promise<void> {
     if (!target) {
@@ -76,6 +77,7 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
     }
 
     const installResult = await installTo(bundlePick, name, parameterValues.value, credentialSet.value);
+    reportErrorableResult("install-completed", installResult);
 
     if (succeeded(installResult)) {
         await refreshInstallationExplorer();
