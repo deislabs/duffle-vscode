@@ -18,6 +18,8 @@ import { exposeParameter } from './commands/exposeparameter';
 import { generateCredentials } from './commands/generatecredentials';
 import { repoBundleRef } from './utils/bundleselection';
 import { promptForCredentials } from './utils/credentials';
+import { Reporter } from './utils/telemetry';
+import * as telemetry from './utils/telemetry-helper';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
@@ -27,26 +29,27 @@ export function activate(context: vscode.ExtensionContext) {
     const credentialExplorer = new CredentialExplorer(shell.shell);
 
     const subscriptions = [
-        vscode.commands.registerCommand('duffle.refreshInstallationExplorer', () => installationExplorer.refresh()),
-        vscode.commands.registerCommand('duffle.installationStatus', (node) => installationStatus(node)),
-        vscode.commands.registerCommand('duffle.installationUpgrade', (node) => installationUpgrade(node)),
-        vscode.commands.registerCommand('duffle.installationUninstall', (node) => installationUninstall(node)),
-        vscode.commands.registerCommand('duffle.createProject', createProject),
-        vscode.commands.registerCommand('duffle.build', build),
-        vscode.commands.registerCommand('duffle.pull', pull),
-        vscode.commands.registerCommand('duffle.push', push),
-        vscode.commands.registerCommand('duffle.install', install),
-        vscode.commands.registerCommand('duffle.generateCredentials', generateCredentials),
-        vscode.commands.registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
-        vscode.commands.registerCommand('duffle.refreshRepoExplorer', () => { /* (TODO: REPO: restore when repos land for real) repoExplorer.refresh() */ }),
-        vscode.commands.registerCommand('duffle.refreshCredentialExplorer', () => credentialExplorer.refresh()),
-        vscode.commands.registerCommand('duffle.credentialsetAdd', credentialSetAdd),
-        vscode.commands.registerCommand('duffle.credentialsetDelete', (node) => credentialsetDelete(node)),
-        vscode.commands.registerCommand('duffle.exposeParameter', exposeParameter),
+        registerCommand('duffle.refreshInstallationExplorer', () => installationExplorer.refresh()),
+        registerCommand('duffle.installationStatus', (node) => installationStatus(node)),
+        registerCommand('duffle.installationUpgrade', (node) => installationUpgrade(node)),
+        registerCommand('duffle.installationUninstall', (node) => installationUninstall(node)),
+        registerCommand('duffle.createProject', createProject),
+        registerCommand('duffle.build', build),
+        registerCommand('duffle.pull', pull),
+        registerCommand('duffle.push', push),
+        registerCommand('duffle.install', install),
+        registerCommand('duffle.generateCredentials', generateCredentials),
+        registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
+        registerCommand('duffle.refreshRepoExplorer', () => { /* (TODO: REPO: restore when repos land for real) repoExplorer.refresh() */ }),
+        registerCommand('duffle.refreshCredentialExplorer', () => credentialExplorer.refresh()),
+        registerCommand('duffle.credentialsetAdd', credentialSetAdd),
+        registerCommand('duffle.credentialsetDelete', (node) => credentialsetDelete(node)),
+        registerCommand('duffle.exposeParameter', exposeParameter),
         vscode.window.registerTreeDataProvider("duffle.installationExplorer", installationExplorer),
         vscode.window.registerTreeDataProvider("duffle.bundleExplorer", bundleExplorer),
         vscode.window.registerTreeDataProvider("duffle.credentialExplorer", credentialExplorer),
         // vscode.languages.registerCompletionItemProvider({ language: buildDefinition.oldLanguageId, pattern: `**/${buildDefinition.oldDefinitionFile}`, scheme: 'file' }, duffleBuildDefinitionCompletionProvider)  // TODO: rewrite for JSON
+        registerTelemetry(context),
     ];
 
     initDiagnostics();
@@ -55,6 +58,15 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+}
+
+function registerCommand(command: string, callback: (...args: any[]) => any): vscode.Disposable {
+    const wrappedCallback = telemetry.telemetrise(command, callback);
+    return vscode.commands.registerCommand(command, wrappedCallback);
+}
+
+function registerTelemetry(context: vscode.ExtensionContext): vscode.Disposable {
+    return new Reporter(context);
 }
 
 function initDiagnostics() {

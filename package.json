@@ -12,6 +12,7 @@
     "categories": [
         "Other"
     ],
+    "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
     "activationEvents": [
         "onCommand:duffle.refreshInstallationExplorer",
         "onCommand:duffle.installationStatus",
@@ -371,7 +372,8 @@
         "request": "^2.88.0",
         "request-promise-native": "^1.0.5",
         "shelljs": "^0.7.7",
-        "tmp": "^0.0.33"
+        "tmp": "^0.0.33",
+        "vscode-extension-telemetry": "^0.0.6"
     },
     "devDependencies": {
         "typescript": "^2.6.1",
