@@ -2,7 +2,7 @@
     "name": "duffle-vscode",
     "displayName": "Duffle",
     "description": "VS Code extension for Duffle, the CNAB installer",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "preview": true,
     "publisher": "ms-kubernetes-tools",
     "engines": {
@@ -11,6 +11,10 @@
     "license": "MIT",
     "categories": [
         "Other"
+    ],
+    "keywords": [
+        "cnab",
+        "duffle"
     ],
     "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
     "activationEvents": [
