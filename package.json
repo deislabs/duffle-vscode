@@ -372,7 +372,7 @@
         "@types/request-promise-native": "^1.0.15",
         "@types/shelljs": "^0.8.0",
         "@types/tmp": "0.0.33",
-        "lodash": "^4.17.10",
+        "lodash": "^4.17.11",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.5",
         "shelljs": "^0.7.7",
@@ -381,7 +381,7 @@
     },
     "devDependencies": {
         "typescript": "^2.6.1",
-        "vscode": "^1.1.21",
+        "vscode": "^1.1.29",
         "tslint": "^5.8.0",
         "@types/node": "^8.10.25",
         "@types/mocha": "^2.2.42"
