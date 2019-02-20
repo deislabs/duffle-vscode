@@ -27,6 +27,7 @@
         "onCommand:duffle.pull",
         "onCommand:duffle.push",
         "onCommand:duffle.install",
+        "onCommand:duffle.bundleDelete",
         "onCommand:duffle.generateCredentials",
         "onCommand:duffle.refreshBundleExplorer",
         "onCommand:duffle.refreshRepoExplorer",
@@ -89,6 +90,11 @@
             {
                 "command": "duffle.install",
                 "title": "Install Bundle",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.bundleDelete",
+                "title": "Delete Bundle",
                 "category": "Duffle"
             },
             {
@@ -230,6 +236,11 @@
                     "group": "1"
                 },
                 {
+                    "command": "duffle.bundleDelete",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
+                    "group": "3"
+                },
+                {
                     "command": "duffle.generateCredentials",
                     "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
                     "group": "1"
@@ -298,6 +309,11 @@
                     "command": "duffle.push",
                     "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle_TODO_REPO_restore_when_repos_land_for_real",
                     "group": "2"
+                },
+                {
+                    "command": "duffle.bundleDelete",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
+                    "group": "3"
                 },
                 {
                     "command": "duffle.refreshBundleExplorer",

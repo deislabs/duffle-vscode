@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 
-import { InstallationRef, CredentialSetRef, RepoBundleRef } from './duffle/duffle.objectmodel';
+import { InstallationRef, CredentialSetRef, RepoBundleRef, LocalBundleRef } from './duffle/duffle.objectmodel';
 import { InstallationExplorer } from './explorer/installation/installation-explorer';
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { CredentialExplorer } from './explorer/credential/credential-explorer';
@@ -38,6 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
         registerCommand('duffle.pull', pull),
         registerCommand('duffle.push', push),
         registerCommand('duffle.install', install),
+        registerCommand('duffle.bundleDelete', (node) => bundleDelete(node)),
         registerCommand('duffle.generateCredentials', generateCredentials),
         registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
         registerCommand('duffle.refreshRepoExplorer', () => { /* (TODO: REPO: restore when repos land for real) repoExplorer.refresh() */ }),
@@ -182,6 +183,27 @@ async function pull(repoBundle: RepoBundleRef): Promise<void> {
     }
 
     await showDuffleResult('pull', bundleName, pullResult);
+}
+
+async function bundleDelete(bundle: LocalBundleRef): Promise<void> {
+    const bundleName = bundle.bundle.name;
+    const version = bundle.bundle.version;  // currently we *always* have a version - can only delete versions
+    const displayName = `${bundleName}:${version}`;
+
+    const confirmed = await confirm(`Deleting ${displayName} cannot be undone.`, 'Delete');
+    if (!confirmed) {
+        return;
+    }
+
+    const deleteResult = await longRunning(`Duffle deleting bundle ${displayName}`,
+        () => duffle.deleteBundle(shell.shell, bundleName, version)
+    );
+
+    if (succeeded(deleteResult)) {
+        await refreshBundleExplorer();
+    }
+
+    await showDuffleResult('bundle remove', displayName, deleteResult);
 }
 
 async function credentialsetDelete(credentialSet: CredentialSetRef): Promise<void> {
