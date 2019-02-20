@@ -99,6 +99,16 @@ export async function pull(sh: shell.Shell, bundleName: string): Promise<Errorab
     return await invokeObj(sh, 'pull', `${bundleName} --insecure`, {}, (s) => null);
 }
 
+export async function exportFile(sh: shell.Shell, bundleFilePath: string, outputFile: string, thick: boolean): Promise<Errorable<null>> {
+    const modeFlag = thick ? '' : '-t';
+    return await invokeObj(sh, 'export', `"${bundleFilePath}" -s ${modeFlag} -o "${outputFile}" --insecure`, {}, (_) => null);
+}
+
+export async function exportBundle(sh: shell.Shell, bundleName: string, outputFile: string, thick: boolean): Promise<Errorable<null>> {
+    const modeFlag = thick ? '' : '-t';
+    return await invokeObj(sh, 'export', `${bundleName} ${modeFlag} -o "${outputFile}" --insecure`, {}, (_) => null);
+}
+
 export async function getClaim(sh: shell.Shell, claimName: string): Promise<Errorable<Claim>> {
     return await invokeObj(sh, 'claims show', claimName, {}, (s) => JSON.parse(s));
 }
