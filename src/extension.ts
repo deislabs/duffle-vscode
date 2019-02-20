@@ -20,6 +20,7 @@ import { repoBundleRef } from './utils/bundleselection';
 import { promptForCredentials } from './utils/credentials';
 import { Reporter } from './utils/telemetry';
 import * as telemetry from './utils/telemetry-helper';
+import { exportBundle } from './commands/export';
 
 const duffleDiagnostics = vscode.languages.createDiagnosticCollection("Duffle");
 
@@ -39,6 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
         registerCommand('duffle.push', push),
         registerCommand('duffle.install', install),
         registerCommand('duffle.bundleDelete', (node) => bundleDelete(node)),
+        registerCommand('duffle.export', exportBundle),
         registerCommand('duffle.generateCredentials', generateCredentials),
         registerCommand('duffle.refreshBundleExplorer', () => bundleExplorer.refresh()),
         registerCommand('duffle.refreshRepoExplorer', () => { /* (TODO: REPO: restore when repos land for real) repoExplorer.refresh() */ }),

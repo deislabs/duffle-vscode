@@ -28,6 +28,7 @@
         "onCommand:duffle.push",
         "onCommand:duffle.install",
         "onCommand:duffle.bundleDelete",
+        "onCommand:duffle.export",
         "onCommand:duffle.generateCredentials",
         "onCommand:duffle.refreshBundleExplorer",
         "onCommand:duffle.refreshRepoExplorer",
@@ -95,6 +96,11 @@
             {
                 "command": "duffle.bundleDelete",
                 "title": "Delete Bundle",
+                "category": "Duffle"
+            },
+            {
+                "command": "duffle.export",
+                "title": "Export Bundle",
                 "category": "Duffle"
             },
             {
@@ -246,9 +252,14 @@
                     "group": "1"
                 },
                 {
+                    "command": "duffle.export",
+                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
+                    "group": "2"
+                },
+                {
                     "command": "duffle.push",
                     "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle_TODO_REPO_restore_when_repos_land_for_real",
-                    "group": "2"
+                    "group": "3"
                 },
                 {
                     "command": "duffle.credentialsetDelete",
@@ -264,6 +275,16 @@
                 },
                 {
                     "command": "duffle.install",
+                    "when": "resourceFilename == bundle.cnab",
+                    "group": "9"
+                },
+                {
+                    "command": "duffle.export",
+                    "when": "resourceFilename == bundle.json",
+                    "group": "9"
+                },
+                {
+                    "command": "duffle.export",
                     "when": "resourceFilename == bundle.cnab",
                     "group": "9"
                 },
