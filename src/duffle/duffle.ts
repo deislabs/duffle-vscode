@@ -123,6 +123,11 @@ export async function installBundle(sh: shell.Shell, bundleName: string, name: s
     return await invokeObj(sh, 'install', `${name} ${bundleName} ${paramsArgs(params)} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
 }
 
+export async function deleteBundle(sh: shell.Shell, bundleName: string, version: string | undefined): Promise<Errorable<null>> {
+    const versionArg = version ? `--version ${version}` : '';
+    return await invokeObj(sh, 'bundle remove', `${bundleName} ${versionArg}`, {}, (s) => null);
+}
+
 function paramsArgs(parameters: { [key: string]: string }): string {
     return pairs.fromStringMap(parameters)
         .filter((p) => !!p.value)
