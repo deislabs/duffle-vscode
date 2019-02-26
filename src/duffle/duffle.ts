@@ -116,7 +116,7 @@ export async function build(sh: shell.Shell, folderPath: string): Promise<Errora
 }
 
 export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'install', `${name} -f "${bundleFilePath}" ${paramsArgs(params)} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
+    return await invokeObj(sh, 'install', `${name} "${bundleFilePath}" -f ${paramsArgs(params)} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
 }
 
 export async function installBundle(sh: shell.Shell, bundleName: string, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<null>> {
