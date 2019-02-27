@@ -72,8 +72,8 @@ enum ExportKind {
 
 async function promptExportKind(): Promise<ExportKind | undefined> {
     const kindOptions = [
-        { label: 'Full bundle (include all images in installer)', resultValue: ExportKind.Full },
-        { label: 'Manifest only (installer will pull images from registry)', resultValue: ExportKind.ManifestOnly },
+        { label: 'Full bundle (include all images in export file)', resultValue: ExportKind.Full },
+        { label: 'Manifest only', resultValue: ExportKind.ManifestOnly },
     ];
     const pick = await vscode.window.showQuickPick(kindOptions);
     if (!pick) {
