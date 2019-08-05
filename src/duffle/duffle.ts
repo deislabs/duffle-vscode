@@ -91,7 +91,7 @@ export async function pull(sh: shell.Shell, bundleName: string): Promise<Errorab
 
 export async function exportFile(sh: shell.Shell, bundleFilePath: string, outputFile: string, thick: boolean): Promise<Errorable<null>> {
     const modeFlag = thick ? '' : '-t';
-    return await invokeObj(sh, 'export', `"${bundleFilePath}" -s ${modeFlag} -o "${outputFile}"`, {}, (_) => null);
+    return await invokeObj(sh, 'export', `"${bundleFilePath}" -f ${modeFlag} -o "${outputFile}"`, {}, (_) => null);
 }
 
 export async function exportBundle(sh: shell.Shell, bundleName: string, outputFile: string, thick: boolean): Promise<Errorable<null>> {
