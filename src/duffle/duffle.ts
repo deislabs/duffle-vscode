@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as config from '../config/config';
 import { Errorable } from '../utils/errorable';
 import * as shell from '../utils/shell';
-import { RepoBundle, LocalBundle, Claim } from './duffle.objectmodel';
+import { LocalBundle, Claim } from './duffle.objectmodel';
 import { sharedTerminal } from './sharedterminal';
 import * as pairs from '../utils/pairs';
 import * as buildDefinition from './builddefinition';
@@ -61,16 +61,6 @@ export function listCredentialSets(sh: shell.Shell): Promise<Errorable<string[]>
             .filter((l) => l.length > 0);
     }
     return invokeObj(sh, 'credentials list', '--short', {}, parse);
-}
-
-export function search(sh: shell.Shell): Promise<Errorable<RepoBundle[]>> {
-    function parse(stdout: string): RepoBundle[] {
-        const lines = stdout.split('\n')
-            .map((l) => l.trim())
-            .filter((l) => l.length > 0);
-        return fromHeaderedTable<RepoBundle>(lines).map((b) => ({ repository: "hub.cnlabs.io", ...b }));
-    }
-    return invokeObj(sh, 'search', '', {}, parse);
 }
 
 export function bundles(sh: shell.Shell): Promise<Errorable<LocalBundle[]>> {
