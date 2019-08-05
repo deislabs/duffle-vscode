@@ -2,21 +2,19 @@
 
 import * as vscode from 'vscode';
 
-import { InstallationRef, CredentialSetRef, RepoBundleRef, LocalBundleRef } from './duffle/duffle.objectmodel';
+import { InstallationRef, CredentialSetRef, LocalBundleRef } from './duffle/duffle.objectmodel';
 import { InstallationExplorer } from './explorer/installation/installation-explorer';
 import { BundleExplorer } from './explorer/bundle/bundle-explorer';
 import { CredentialExplorer } from './explorer/credential/credential-explorer';
 import * as shell from './utils/shell';
 import * as duffle from './duffle/duffle';
 import { selectWorkspaceFolder, longRunning, showDuffleResult, refreshInstallationExplorer, refreshCredentialExplorer, confirm, refreshBundleExplorer } from './utils/host';
-import { push } from './commands/push';
 import { install } from './commands/install';
 import { lintTo } from './lint/linters';
 import { succeeded, failed } from './utils/errorable';
 import { selectProjectCreator } from './projects/ui';
 import { exposeParameter } from './commands/exposeparameter';
 import { generateCredentials } from './commands/generatecredentials';
-import { repoBundleRef } from './utils/bundleselection';
 import { promptForCredentials } from './utils/credentials';
 import { Reporter } from './utils/telemetry';
 import * as telemetry from './utils/telemetry-helper';
@@ -36,8 +34,8 @@ export function activate(context: vscode.ExtensionContext) {
         registerCommand('duffle.installationUninstall', (node) => installationUninstall(node)),
         registerCommand('duffle.createProject', createProject),
         registerCommand('duffle.build', build),
-        registerCommand('duffle.pull', pull),
-        registerCommand('duffle.push', push),
+        // registerCommand('duffle.pull', pull),
+        // registerCommand('duffle.push', push),
         registerCommand('duffle.install', install),
         registerCommand('duffle.bundleDelete', (node) => bundleDelete(node)),
         registerCommand('duffle.export', exportBundle),
@@ -174,18 +172,18 @@ async function installationUninstall(bundle: InstallationRef): Promise<void> {
     });
 }
 
-async function pull(repoBundle: RepoBundleRef): Promise<void> {
-    const bundleName = repoBundleRef(repoBundle.bundle);
-    const pullResult = await longRunning(`Duffle pulling ${bundleName}`, () =>
-        duffle.pull(shell.shell, bundleName)
-    );
+// async function pull(repoBundle: RepoBundleRef): Promise<void> {
+//     const bundleName = repoBundleRef(repoBundle.bundle);
+//     const pullResult = await longRunning(`Duffle pulling ${bundleName}`, () =>
+//         duffle.pull(shell.shell, bundleName)
+//     );
 
-    if (succeeded(pullResult)) {
-        await refreshBundleExplorer();
-    }
+//     if (succeeded(pullResult)) {
+//         await refreshBundleExplorer();
+//     }
 
-    await showDuffleResult('pull', bundleName, pullResult);
-}
+//     await showDuffleResult('pull', bundleName, pullResult);
+// }
 
 async function bundleDelete(bundle: LocalBundleRef): Promise<void> {
     const bundleName = bundle.bundle.name;

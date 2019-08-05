@@ -81,13 +81,13 @@ export async function uninstall(sh: shell.Shell, bundleName: string, credentialS
     return await invokeObj(sh, 'uninstall', `${bundleName} ${credentialArg(credentialSet)}`, {}, (s) => null);
 }
 
-export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'push', `${bundleName}`, {}, (s) => null);
-}
+// export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
+//     return await invokeObj(sh, 'push', `${bundleName}`, {}, (s) => null);
+// }
 
-export async function pull(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'pull', `${bundleName}`, {}, (s) => null);
-}
+// export async function pull(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
+//     return await invokeObj(sh, 'pull', `${bundleName}`, {}, (s) => null);
+// }
 
 export async function exportFile(sh: shell.Shell, bundleFilePath: string, outputFile: string, thick: boolean): Promise<Errorable<null>> {
     const modeFlag = thick ? '' : '-t';
