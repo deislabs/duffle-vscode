@@ -50,6 +50,10 @@ function parameterEntryRow(p: ParameterDefinitionMapping): string {
 }
 
 function inputWidget(p: ParameterDefinitionMapping): string {
+    if (!p.schema) {
+        // This doesn't need to be fancy as it should never happen
+        return `<input name="${p.name}" type="text" />`;
+    }
     if (p.schema.type === "boolean") {
         return `<select name="${p.name}"><option>True</option><option>False</option></select>`;
     }
