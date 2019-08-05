@@ -74,11 +74,11 @@ export function bundles(sh: shell.Shell): Promise<Errorable<LocalBundle[]>> {
 }
 
 export async function upgrade(sh: shell.Shell, bundleName: string, credentialSet: string | undefined): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'upgrade', `${bundleName} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
+    return await invokeObj(sh, 'upgrade', `${bundleName} ${credentialArg(credentialSet)}`, {}, (s) => null);
 }
 
 export async function uninstall(sh: shell.Shell, bundleName: string, credentialSet: string | undefined): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'uninstall', `${bundleName} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
+    return await invokeObj(sh, 'uninstall', `${bundleName} ${credentialArg(credentialSet)}`, {}, (s) => null);
 }
 
 export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
@@ -86,17 +86,17 @@ export async function pushBundle(sh: shell.Shell, bundleName: string): Promise<E
 }
 
 export async function pull(sh: shell.Shell, bundleName: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'pull', `${bundleName} --insecure`, {}, (s) => null);
+    return await invokeObj(sh, 'pull', `${bundleName}`, {}, (s) => null);
 }
 
 export async function exportFile(sh: shell.Shell, bundleFilePath: string, outputFile: string, thick: boolean): Promise<Errorable<null>> {
     const modeFlag = thick ? '' : '-t';
-    return await invokeObj(sh, 'export', `"${bundleFilePath}" -s ${modeFlag} -o "${outputFile}" --insecure`, {}, (_) => null);
+    return await invokeObj(sh, 'export', `"${bundleFilePath}" -s ${modeFlag} -o "${outputFile}"`, {}, (_) => null);
 }
 
 export async function exportBundle(sh: shell.Shell, bundleName: string, outputFile: string, thick: boolean): Promise<Errorable<null>> {
     const modeFlag = thick ? '' : '-t';
-    return await invokeObj(sh, 'export', `${bundleName} ${modeFlag} -o "${outputFile}" --insecure`, {}, (_) => null);
+    return await invokeObj(sh, 'export', `${bundleName} ${modeFlag} -o "${outputFile}"`, {}, (_) => null);
 }
 
 export async function getClaim(sh: shell.Shell, claimName: string): Promise<Errorable<Claim>> {
@@ -116,11 +116,11 @@ export async function build(sh: shell.Shell, folderPath: string): Promise<Errora
 }
 
 export async function installFile(sh: shell.Shell, bundleFilePath: string, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'install', `${name} "${bundleFilePath}" -f ${paramsArgs(params)} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
+    return await invokeObj(sh, 'install', `${name} "${bundleFilePath}" -f ${paramsArgs(params)} ${credentialArg(credentialSet)}`, {}, (s) => null);
 }
 
 export async function installBundle(sh: shell.Shell, bundleName: string, name: string, params: { [key: string]: string }, credentialSet: string | undefined): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'install', `${name} ${bundleName} ${paramsArgs(params)} ${credentialArg(credentialSet)} --insecure`, {}, (s) => null);
+    return await invokeObj(sh, 'install', `${name} ${bundleName} ${paramsArgs(params)} ${credentialArg(credentialSet)}`, {}, (s) => null);
 }
 
 export async function deleteBundle(sh: shell.Shell, bundleName: string, version: string | undefined): Promise<Errorable<null>> {
@@ -172,9 +172,9 @@ export async function deleteCredentialSet(sh: shell.Shell, credentialSetName: st
 }
 
 export async function generateCredentialsForFile(sh: shell.Shell, bundleFilePath: string, name: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'credentials generate', `${name} -f "${bundleFilePath}" -q --insecure`, {}, (s) => null);
+    return await invokeObj(sh, 'credentials generate', `${name} -f "${bundleFilePath}" -q`, {}, (s) => null);
 }
 
 export async function generateCredentialsForBundle(sh: shell.Shell, bundleName: string, name: string): Promise<Errorable<null>> {
-    return await invokeObj(sh, 'credentials generate', `${name} ${bundleName} -q --insecure`, {}, (s) => null);
+    return await invokeObj(sh, 'credentials generate', `${name} ${bundleName} -q`, {}, (s) => null);
 }
