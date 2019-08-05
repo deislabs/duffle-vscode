@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
+import * as cnab from 'cnabjs';
 
 import * as duffle from '../duffle/duffle';
 import { Cancellable } from './cancellable';
 import { Shell } from './shell';
 import { failed } from './errorable';
-import { BundleManifest } from '../duffle/duffle.objectmodel';
 
-export async function promptForCredentials(bundleManifest: BundleManifest, sh: Shell, prompt: string): Promise<Cancellable<string | undefined>> {
+export async function promptForCredentials(bundleManifest: cnab.Bundle, sh: Shell, prompt: string): Promise<Cancellable<string | undefined>> {
     if (!(await hasCredentials(bundleManifest))) {
         return { cancelled: false, value: undefined };
     }
@@ -29,7 +29,7 @@ export async function promptForCredentials(bundleManifest: BundleManifest, sh: S
     return { cancelled: false, value: credentialSet };
 }
 
-async function hasCredentials(manifest: BundleManifest): Promise<boolean> {
+async function hasCredentials(manifest: cnab.Bundle): Promise<boolean> {
     const credentials = manifest.credentials || {};
     return Object.keys(credentials).length > 0;
 }

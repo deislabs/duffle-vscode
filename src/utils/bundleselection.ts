@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as request from 'request-promise-native';
+import * as cnab from 'cnabjs';
 
 import { selectQuickPick } from './host';
-import { RepoBundle, BundleManifest, LocalBundle } from '../duffle/duffle.objectmodel';
+import { RepoBundle, LocalBundle } from '../duffle/duffle.objectmodel';
 import { cantHappen } from './never';
 import { fs } from './fs';
 import { Errorable, map, failed } from './errorable';
@@ -33,7 +34,7 @@ export interface LocalBundleSelection {
 export type BundleSelection = FileBundleSelection | RepoBundleSelection | LocalBundleSelection;
 
 export interface BundleContent {
-    readonly manifest: BundleManifest;
+    readonly manifest: cnab.Bundle;
     readonly text: string;
 }
 
@@ -119,7 +120,7 @@ export async function bundleContent(bundlePick: BundleSelection): Promise<Errora
     });
 }
 
-export async function bundleManifest(bundlePick: BundleSelection): Promise<Errorable<BundleManifest>> {
+export async function bundleManifest(bundlePick: BundleSelection): Promise<Errorable<cnab.Bundle>> {
     const content = await bundleContent(bundlePick);
     return map(content, (c) => c.manifest);
 }
