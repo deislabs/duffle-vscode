@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import * as buildDefinition from './duffle.builddefinition.linters';
+// import * as buildDefinition from './duffle.builddefinition.linters';
 
 export interface Linter {
     canLint(document: vscode.TextDocument): boolean;
@@ -8,8 +8,8 @@ export interface Linter {
 }
 
 const linters: Linter[] = [
-    new buildDefinition.InvocationImageNameMustBeSubdirectory(),
-    new buildDefinition.InvocationImageNameMustMatchNameElement()
+    // new buildDefinition.InvocationImageNameMustBeSubdirectory(),
+    // new buildDefinition.InvocationImageNameMustMatchNameElement()
 ];
 
 export function lintTo(dc: vscode.DiagnosticCollection): (document: vscode.TextDocument) => Promise<void> {
