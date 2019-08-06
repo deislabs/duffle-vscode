@@ -2,7 +2,7 @@
     "name": "duffle-vscode",
     "displayName": "Duffle",
     "description": "Build and deploy Cloud Native Application Bundles with Duffle",
-    "version": "0.0.5",
+    "version": "0.3.0",
     "preview": true,
     "publisher": "ms-kubernetes-tools",
     "engines": {

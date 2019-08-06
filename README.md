@@ -10,7 +10,7 @@ An extension for developers building Cloud Native Application Bundles using the 
 * View your installed bundles
 * Create and populate Duffle credential sets
 
-This is an alpha release of the extension.  Please report any bugs or problems, and let us know if you have any suggestions or feature requests!  You can reach us via our [GitHub issues page](https://github.com/deislabs/duffle-vscode/issues).
+This is a beta release of the extension.  Please report any bugs or problems, and let us know if you have any suggestions or feature requests!  You can reach us via our [GitHub issues page](https://github.com/deislabs/duffle-vscode/issues).
 
 ## Getting started with the extension
 
