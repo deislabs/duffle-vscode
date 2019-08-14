@@ -1,16 +1,18 @@
-import { ParameterDefinition, BundleManifest } from "../duffle/duffle.objectmodel";
+import * as cnab from "cnabjs";
+
 import { BundleSelection } from "./bundleselection";
 import { END_DIALOG_FN, dialog } from "./dialog";
 import { Cancellable } from './cancellable';
 
 export type ParameterValuesPromptResult = Cancellable<{ [key: string]: string }>;
 
-interface ParameterDefinitionMapping extends ParameterDefinition {
+interface ParameterDefinitionMapping extends cnab.Parameter {
     readonly name: string;
+    readonly schema: cnab.Definition;
 }
 
-export async function promptForParameters(bundlePick: BundleSelection, bundleManifest: BundleManifest, actionName: string, prompt: string): Promise<ParameterValuesPromptResult> {
-    const definitions = parseParameters(bundleManifest);
+export async function promptForParameters(bundlePick: BundleSelection, bundleManifest: cnab.Bundle, actionId: string, actionDisplayName: string, prompt: string): Promise<ParameterValuesPromptResult> {
+    const definitions = parseParameters(bundleManifest, actionId);
     if (!definitions || definitions.length === 0) {
         return { cancelled: false, value: {} };
     }
@@ -21,9 +23,9 @@ export async function promptForParameters(bundlePick: BundleSelection, bundleMan
     <form id='${parameterFormId}'>
     ${parameterEntryTable(definitions)}
     </form>
-    <p><button onclick='${END_DIALOG_FN}'>${actionName}</button></p>`;
+    <p><button onclick='${END_DIALOG_FN}'>${actionDisplayName}</button></p>`;
 
-    const parameterValues = await dialog(`${actionName} ${bundlePick.label}`, html, parameterFormId);
+    const parameterValues = await dialog(`${actionDisplayName} ${bundlePick.label}`, html, parameterFormId);
     if (!parameterValues) {
         return { cancelled: true };
     }
@@ -42,30 +44,37 @@ function parameterEntryRow(p: ParameterDefinitionMapping): string {
     <td>${inputWidget(p)}</td>
 </tr>
 <tr>
-    <td colspan="2" style="font-size:80%">${p.metadata ? (p.metadata.description || '') : ''}</td>
+    <td colspan="2" style="font-size:80%">${p.description || ''}</td>
 </tr>
 `;
 }
 
 function inputWidget(p: ParameterDefinitionMapping): string {
-    if (p.type === "bool") {
+    if (!p.schema) {
+        // This doesn't need to be fancy as it should never happen
+        return `<input name="${p.name}" type="text" />`;
+    }
+    if (p.schema.type === "boolean") {
         return `<select name="${p.name}"><option>True</option><option>False</option></select>`;
     }
-    if (p.allowedValues) {
-        const opts = p.allowedValues.map((av) => `<option>${av}</option>`).join('');
+    if (p.schema.enum) {
+        const opts = p.schema.enum.map((av) => `<option>${av}</option>`).join('');
         return `<select name="${p.name}">${opts}</select>`;
     }
-    const defval = p.defaultValue ? `${p.defaultValue}` : '';
+    const defval = p.schema.default ? `${p.schema.default}` : '';
     return `<input name="${p.name}" type="text" value="${defval}" />`;
 }
 
-function parseParameters(manifest: BundleManifest): ParameterDefinitionMapping[] {
-    const parameters = manifest.parameters;
-    const defs: ParameterDefinitionMapping[] = [];
-    if (parameters) {
-        for (const k in parameters) {
-            defs.push({ name: k, ...parameters[k] });
-        }
+function parseParameters(bundle: cnab.Bundle, action: string): ParameterDefinitionMapping[] {
+    const parameters = bundle.parameters;
+    const schemas = bundle.definitions;
+    if (!parameters || !schemas) {
+        return [];
     }
+
+    const actionParameters = cnab.Parameters.forAction(bundle, action);
+    const parameterSequence = Array.of(...actionParameters).sort();
+
+    const defs = parameterSequence.map((k) => ({ name: k, schema: schemas[parameters[k].definition], ...parameters[k] }));
     return defs;
 }

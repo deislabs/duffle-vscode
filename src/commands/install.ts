@@ -71,7 +71,7 @@ async function installCore(bundlePick: BundleSelection): Promise<void> {
         return;
     }
 
-    const parameterValues = await promptForParameters(bundlePick, manifest.result, 'Install', 'Enter installation parameters');
+    const parameterValues = await promptForParameters(bundlePick, manifest.result, 'install', 'Install', 'Enter installation parameters');
     if (parameterValues.cancelled) {
         return;
     }

@@ -2,7 +2,7 @@
     "name": "duffle-vscode",
     "displayName": "Duffle",
     "description": "Build and deploy Cloud Native Application Bundles with Duffle",
-    "version": "0.0.5",
+    "version": "0.3.0",
     "preview": true,
     "publisher": "ms-kubernetes-tools",
     "engines": {
@@ -25,8 +25,6 @@
         "onCommand:duffle.installationUninstall",
         "onCommand:duffle.createProject",
         "onCommand:duffle.build",
-        "onCommand:duffle.pull",
-        "onCommand:duffle.push",
         "onCommand:duffle.install",
         "onCommand:duffle.bundleDelete",
         "onCommand:duffle.export",
@@ -77,16 +75,6 @@
             {
                 "command": "duffle.build",
                 "title": "Build Bundle",
-                "category": "Duffle"
-            },
-            {
-                "command": "duffle.pull",
-                "title": "Pull Bundle",
-                "category": "Duffle"
-            },
-            {
-                "command": "duffle.push",
-                "title": "Push Bundle to Repo",
                 "category": "Duffle"
             },
             {
@@ -233,11 +221,6 @@
                     "group": "1"
                 },
                 {
-                    "command": "duffle.pull",
-                    "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
-                    "group": "2"
-                },
-                {
                     "command": "duffle.install",
                     "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
                     "group": "1"
@@ -256,11 +239,6 @@
                     "command": "duffle.export",
                     "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle",
                     "group": "2"
-                },
-                {
-                    "command": "duffle.push",
-                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle_TODO_REPO_restore_when_repos_land_for_real",
-                    "group": "3"
                 },
                 {
                     "command": "duffle.credentialsetDelete",
@@ -321,16 +299,6 @@
                     "command": "duffle.installationUninstall",
                     "when": "view == duffle.installationExplorer && viewItem = duffle.installation",
                     "group": "navigation"
-                },
-                {
-                    "command": "duffle.pull",
-                    "when": "view == duffle.repoExplorer && viewItem == duffle.repoBundle",
-                    "group": "2"
-                },
-                {
-                    "command": "duffle.push",
-                    "when": "view == duffle.bundleExplorer && viewItem == duffle.localBundle_TODO_REPO_restore_when_repos_land_for_real",
-                    "group": "2"
                 },
                 {
                     "command": "duffle.bundleDelete",
@@ -410,6 +378,7 @@
         "@types/request-promise-native": "^1.0.15",
         "@types/shelljs": "^0.8.0",
         "@types/tmp": "0.0.33",
+        "cnabjs": "0.0.3",
         "lodash": "^4.17.11",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.5",

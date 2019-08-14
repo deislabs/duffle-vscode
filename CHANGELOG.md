@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.0
+
+* Compatibility update for Duffle 0.3.0 and the CNAB specification Working Draft
+
 ## 0.0.5
 
 * Fixed line ending issue in basic project template
