@@ -379,7 +379,7 @@
         "@types/shelljs": "^0.8.0",
         "@types/tmp": "0.0.33",
         "cnabjs": "0.0.3",
-        "lodash": "^4.17.13",
+        "lodash": "^4.17.19",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.5",
         "shelljs": "^0.7.7",
